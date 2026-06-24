@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans antialiased;
+    background-image: 
+      linear-gradient(to right, rgba(0, 209, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 209, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .dark body {
+    background-color: #0A0F16;
+    color: #E0E6ED;
+  }
+
+  .light body {
+    background-color: #F0F4F8;
+    color: #1A2B3C;
+    background-image: 
+      linear-gradient(to right, rgba(0, 136, 204, 0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 136, 204, 0.08) 1px, transparent 1px);
+  }
+}
+
+@layer components {
+  .technical-border {
+    @apply border border-blueprint-grid/30 dark:border-paper-grid/30;
+  }
+  
+  .annotation {
+    @apply text-xs font-mono px-2 py-1 rounded border-l-2;
+  }
+}
