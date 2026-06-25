@@ -1,10 +1,8 @@
 import { useProjectStore } from '../store/projectStore';
 import { StickyNote, FileText, GripVertical } from 'lucide-react';
-import { useState } from 'react';
 
 export const NotesPanel = () => {
   const { activeProjectId, activeDocumentId, projects } = useProjectStore();
-  const [draggedNote, setDraggedNote] = useState(null);
   
   const activeProject = projects.find(p => p.id === activeProjectId);
   const activeDoc = activeProject?.documents.find(d => d.id === activeDocumentId);
@@ -12,12 +10,9 @@ export const NotesPanel = () => {
   const projectNotes = activeProject?.notes || [];
   const documentNotes = activeDoc?.notes || [];
 
-  const handleDragStart = (note) => {
-    setDraggedNote(note);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedNote(null);
+  const handleNoteDragStart = (e, note) => {
+    e.dataTransfer.setData('application/note', JSON.stringify(note));
+    e.dataTransfer.effectAllowed = 'move';
   };
 
   return (
@@ -76,8 +71,7 @@ export const NotesPanel = () => {
               <div
                 key={note.id}
                 draggable
-                onDragStart={() => handleDragStart(note)}
-                onDragEnd={handleDragEnd}
+                onDragStart={(e) => handleNoteDragStart(e, note)}
                 className="p-2 bg-blueprint-critical/5 border border-blueprint-critical/20 rounded text-xs cursor-move hover:bg-blueprint-critical/10 transition-colors"
               >
                 <div className="flex items-start gap-2">
@@ -90,7 +84,7 @@ export const NotesPanel = () => {
                   </div>
                 </div>
                 <div className="text-[9px] text-current/40 mt-1 font-mono text-right">
-                  Arrastra al chat
+                  Arrastra al chat →
                 </div>
               </div>
             ))}

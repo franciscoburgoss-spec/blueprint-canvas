@@ -7,6 +7,7 @@ export const ChatInterface = ({ onShowComparator, onShowDocs }) => {
   const { annotations, commandHistory, activeProjectId, activeDocumentId, projects } = useProjectStore();
   const [editingCommand, setEditingCommand] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isNoteDragOver, setIsNoteDragOver] = useState(false);
   const chatEndRef = useRef(null);
   
   const activeProject = projects.find(p => p.id === activeProjectId);
@@ -33,6 +34,57 @@ export const ChatInterface = ({ onShowComparator, onShowDocs }) => {
     setIsDragOver(false);
   };
 
+  
+  const handleNoteDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const data = e.dataTransfer.types.includes('application/note');
+    if (data) {
+      setIsNoteDragOver(true);
+    }
+  };
+
+  const handleNoteDragLeave = (e) => {
+    e.preventDefault();
+    setIsNoteDragOver(false);
+  };
+
+  const handleNoteDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsNoteDragOver(false);
+
+    try {
+      const noteData = e.dataTransfer.getData('application/note');
+      if (noteData) {
+        const note = JSON.parse(noteData);
+        const store = useProjectStore.getState();
+        const activeProject = store.projects.find(p => p.id === store.activeProjectId);
+        const activeDoc = activeProject?.documents.find(d => d.id === store.activeDocumentId);
+        
+        if (activeDoc) {
+          store.addObservation(
+            activeDoc.name,
+            'Observación Propia',
+            note.text,
+            'Convertida desde nota'
+          );
+        } else {
+          useProjectStore.setState((state) => ({
+            annotations: [...state.annotations, {
+              id: Date.now(),
+              type: 'error',
+              message: '[ERROR] No hay documento activo. Carga un documento primero con /doc',
+              timestamp: Date.now()
+            }]
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error al procesar nota:', error);
+    }
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
@@ -47,10 +99,12 @@ export const ChatInterface = ({ onShowComparator, onShowDocs }) => {
     <div 
       className={`flex-1 flex flex-col h-full border-r border-blueprint-grid/20 transition-colors ${
         isDragOver ? 'bg-blueprint-grid/5' : ''
+      } ${
+        isNoteDragOver ? 'bg-blueprint-critical/5 border-blueprint-critical/40' : ''
       }`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+      onDragOver={(e) => { handleDragOver(e); handleNoteDragOver(e); }}
+      onDragLeave={(e) => { handleDragLeave(); handleNoteDragLeave(e); }}
+      onDrop={(e) => { handleDrop(e); handleNoteDrop(e); }}
     >
       {/* Header */}
       <div className="p-4 border-b border-blueprint-grid/20 bg-blueprint-panel/30">
