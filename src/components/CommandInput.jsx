@@ -157,11 +157,94 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
 
   const handleExport = (format) => {
     const project = store.projects.find(p => p.id === store.activeProjectId);
-    if (!project) return;
+    if (!project) {
+      useProjectStore.setState((state) => ({ 
+        annotations: [...state.annotations, { 
+          id: Date.now(), 
+          type: 'error', 
+          message: '[ERROR] No hay proyecto activo. Usa /create project primero', 
+          timestamp: Date.now() 
+        }] 
+      }));
+      return;
+    }
+
     if (format === 'markdown') {
-      downloadFile(exportToMarkdown(project), `${project.name}-informe.md`, 'text/markdown');
+      try {
+        const content = exportToMarkdown(project);
+        downloadFile(content, `${project.name.replace(/[^a-z0-9]/gi, '_')}_informe.md`, 'text/markdown');
+        useProjectStore.setState((state) => ({ 
+          annotations: [...state.annotations, { 
+            id: Date.now(), 
+            type: 'success', 
+            message: `[OK] Informe Markdown exportado: ${project.name.replace(/[^a-z0-9]/gi, '_')}_informe.md`, 
+            timestamp: Date.now() 
+          }] 
+        }));
+      } catch (error) {
+        useProjectStore.setState((state) => ({ 
+          annotations: [...state.annotations, { 
+            id: Date.now(), 
+            type: 'error', 
+            message: `[ERROR] No se pudo exportar Markdown: ${error.message}`, 
+            timestamp: Date.now() 
+          }] 
+        }));
+      }
     } else if (format === 'json') {
-      downloadFile(exportToJSON(project), `${project.name}-datos.json`, 'application/json');
+      try {
+        const content = exportToJSON(project);
+        downloadFile(content, `${project.name.replace(/[^a-z0-9]/gi, '_')}_datos.json`, 'application/json');
+        useProjectStore.setState((state) => ({ 
+          annotations: [...state.annotations, { 
+            id: Date.now(), 
+            type: 'success', 
+            message: `[OK] Datos JSON exportados: ${project.name.replace(/[^a-z0-9]/gi, '_')}_datos.json`, 
+            timestamp: Date.now() 
+          }] 
+        }));
+      } catch (error) {
+        useProjectStore.setState((state) => ({ 
+          annotations: [...state.annotations, { 
+            id: Date.now(), 
+            type: 'error', 
+            message: `[ERROR] No se pudo exportar JSON: ${error.message}`, 
+            timestamp: Date.now() 
+          }] 
+        }));
+      }
+    } else if (format === 'pdf') {
+      try {
+        import('../utils/pdfExporter').then(({ exportToPDF }) => {
+          exportToPDF(project);
+          useProjectStore.setState((state) => ({ 
+            annotations: [...state.annotations, { 
+              id: Date.now(), 
+              type: 'success', 
+              message: `[OK] Informe PDF generado: ${project.name.replace(/[^a-z0-9]/gi, '_')}_informe.pdf`, 
+              timestamp: Date.now() 
+            }] 
+          }));
+        }).catch(error => {
+          useProjectStore.setState((state) => ({ 
+            annotations: [...state.annotations, { 
+              id: Date.now(), 
+              type: 'error', 
+              message: `[ERROR] No se pudo generar PDF: ${error.message}`, 
+              timestamp: Date.now() 
+            }] 
+          }));
+        });
+      } catch (error) {
+        useProjectStore.setState((state) => ({ 
+          annotations: [...state.annotations, { 
+            id: Date.now(), 
+            type: 'error', 
+            message: `[ERROR] No se pudo generar PDF: ${error.message}`, 
+            timestamp: Date.now() 
+          }] 
+        }));
+      }
     }
   };
 

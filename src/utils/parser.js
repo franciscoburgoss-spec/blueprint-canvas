@@ -1,3 +1,5 @@
+let observationCounter = 0;
+
 const COMMAND_PATTERNS = {
   CREATE_PROJECT: /^\/create\s+project\s+"([^"]+)"/i,
   USE_PROJECT: /^\/use\s+"([^"]+)"$/i,
@@ -100,9 +102,10 @@ export const parseCommand = (input) => {
 };
 
 export const generateObservationId = () => {
+  observationCounter++;
   const year = new Date().getFullYear();
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  return `OBS-${year}-${random}`;
+  const counter = observationCounter.toString().padStart(3, '0');
+  return `OBS-${year}-${counter}`;
 };
 
 export const getHelpText = () => {

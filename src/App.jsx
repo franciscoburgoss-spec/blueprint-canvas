@@ -5,6 +5,7 @@ import { Timeline } from './components/Timeline';
 import { DocumentComparator } from './components/DocumentComparator';
 import { DocumentationModal } from './components/DocumentationModal';
 import { InstallBanner } from './components/InstallBanner';
+import { UpdateBanner } from './components/UpdateBanner';
 import { useEffect, useState } from 'react';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
       )}
       
       <InstallBanner />
+      <UpdateBanner />
     </div>
   );
 }
