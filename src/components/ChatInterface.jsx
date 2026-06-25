@@ -3,7 +3,7 @@ import { CommandInput } from './CommandInput';
 import { MessageSquare, User } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
-export const ChatInterface = ({ onShowComparator }) => {
+export const ChatInterface = ({ onShowComparator, onShowDocs }) => {
   const { annotations, commandHistory, activeProjectId, activeDocumentId, projects } = useProjectStore();
   const [editingCommand, setEditingCommand] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -12,7 +12,6 @@ export const ChatInterface = ({ onShowComparator }) => {
   const activeProject = projects.find(p => p.id === activeProjectId);
   const activeDoc = activeProject?.documents.find(d => d.id === activeDocumentId);
 
-  // Auto-scroll al final cuando hay nuevos mensajes
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [commandHistory, annotations]);
@@ -39,7 +38,6 @@ export const ChatInterface = ({ onShowComparator }) => {
     setIsDragOver(false);
   };
 
-  // Combinar comandos y anotaciones en orden cronológico
   const allMessages = [
     ...commandHistory.map(cmd => ({ ...cmd, messageType: 'command' })),
     ...annotations.map(ann => ({ ...ann, messageType: 'annotation' })),
@@ -55,13 +53,28 @@ export const ChatInterface = ({ onShowComparator }) => {
       onDrop={handleDrop}
     >
       {/* Header */}
-      <div className="p-4 border-b border-blueprint-grid/20">
-        <div className="flex items-center gap-2 text-xs font-mono text-blueprint-grid">
-          <MessageSquare size={14} />
-          <span>
-            {activeProject ? `PROYECTO: ${activeProject.name}` : 'SIN PROYECTO'}
-            {activeDoc && ` > DOC: ${activeDoc.name}`}
-          </span>
+      <div className="p-4 border-b border-blueprint-grid/20 bg-blueprint-panel/30">
+        <div className="flex items-center gap-2 text-xs font-mono">
+          <MessageSquare size={14} className="text-blueprint-grid" />
+          {activeProject ? (
+            <>
+              <span className="text-blueprint-grid font-medium">
+                {activeProject.name}
+              </span>
+              <span className="text-current/40">·</span>
+              <span className="text-current/60">
+                {activeProject.documents.length} docs
+              </span>
+              {activeDoc && (
+                <>
+                  <span className="text-current/40">›</span>
+                  <span className="text-blueprint-critical">{activeDoc.name}</span>
+                </>
+              )}
+            </>
+          ) : (
+            <span className="text-current/50 italic">SIN PROYECTO ACTIVO</span>
+          )}
         </div>
       </div>
 
@@ -121,6 +134,7 @@ export const ChatInterface = ({ onShowComparator }) => {
           editingCommand={editingCommand}
           onClearEditing={clearEditingCommand}
           onShowComparator={onShowComparator}
+          onShowDocs={onShowDocs}
         />
       </div>
     </div>

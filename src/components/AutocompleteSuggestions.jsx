@@ -36,7 +36,7 @@ export const AutocompleteSuggestions = ({ suggestions, selectedIndex, onSelect }
   if (!suggestions || suggestions.length === 0) return null;
 
   return (
-    <div className="absolute bottom-full left-0 right-0 mb-2 bg-blueprint-panel border border-blueprint-grid/30 rounded shadow-2xl max-h-64 overflow-y-auto z-40">
+    <div className="absolute bottom-full left-0 right-0 mb-2 bg-blueprint-panel border border-blueprint-grid/30 rounded shadow-2xl max-h-96 overflow-y-auto z-40">
       {suggestions.map((suggestion, index) => {
         const Icon = CATEGORY_ICONS[suggestion.category] || Command;
         const colorClass = CATEGORY_COLORS[suggestion.category] || 'text-blueprint-grid';
@@ -54,22 +54,34 @@ export const AutocompleteSuggestions = ({ suggestions, selectedIndex, onSelect }
                 e.currentTarget.classList.remove('bg-blueprint-grid/10');
               }
             }}
-            className={`w-full flex items-start gap-3 px-3 py-2 text-left transition-colors border-b border-blueprint-grid/10 last:border-b-0 ${
+            className={`w-full flex flex-col p-3 text-left transition-colors border-b border-blueprint-grid/10 last:border-b-0 ${
               isSelected ? 'bg-blueprint-grid/15' : 'hover:bg-blueprint-grid/10'
             }`}
           >
-            <Icon size={14} className={`${colorClass} mt-0.5 flex-shrink-0`} />
-            <div className="flex-1 min-w-0">
-              <div className="font-mono text-xs text-current truncate">
-                {suggestion.display}
+            <div className="flex items-start gap-3 w-full">
+              <Icon size={14} className={`${colorClass} mt-0.5 flex-shrink-0`} />
+              <div className="flex-1 min-w-0">
+                <div className="font-mono text-xs text-current truncate">
+                  {suggestion.display}
+                </div>
+                <div className="text-[10px] text-current/50 truncate">
+                  {suggestion.description}
+                </div>
               </div>
-              <div className="text-[10px] text-current/50 truncate">
-                {suggestion.description}
-              </div>
+              {isSelected && (
+                <div className="text-[10px] text-blueprint-grid/60 font-mono flex-shrink-0">
+                  ↵ Enter
+                </div>
+              )}
             </div>
-            {isSelected && (
-              <div className="text-[10px] text-blueprint-grid/60 font-mono flex-shrink-0">
-                ↵ Enter
+            
+            {/* Mostrar ejemplo de sintaxis si existe */}
+            {suggestion.example && (
+              <div className="mt-2 ml-7 pl-2 border-l-2 border-blueprint-critical/30">
+                <div className="text-[9px] text-current/40 font-mono mb-0.5">Ejemplo:</div>
+                <code className="text-[10px] font-mono text-blueprint-critical/80 bg-blueprint-critical/5 px-1.5 py-0.5 rounded block truncate">
+                  {suggestion.example}
+                </code>
               </div>
             )}
           </button>

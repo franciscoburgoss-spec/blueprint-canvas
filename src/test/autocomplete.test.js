@@ -197,9 +197,27 @@ describe('Autocomplete System', () => {
     it('debe sugerir formatos para /export', () => {
       const suggestions = getSuggestions('/export ');
       const exportSuggestions = suggestions.filter(s => s.category === 'exportación');
-      expect(exportSuggestions.length).toBe(2);
+      expect(exportSuggestions.length).toBe(3);
       expect(exportSuggestions.some(s => s.display === 'markdown')).toBe(true);
       expect(exportSuggestions.some(s => s.display === 'json')).toBe(true);
+      expect(exportSuggestions.some(s => s.display === 'pdf')).toBe(true);
+    });
+  });
+
+  describe('getSuggestions - comandos de proyecto', () => {
+    it('debe sugerir /current', () => {
+      const suggestions = getSuggestions('/cu');
+      expect(suggestions.some(s => s.display.includes('/current'))).toBe(true);
+    });
+
+    it('debe sugerir /use', () => {
+      const suggestions = getSuggestions('/us');
+      expect(suggestions.some(s => s.display.includes('/use'))).toBe(true);
+    });
+
+    it('debe sugerir /docs', () => {
+      const suggestions = getSuggestions('/do');
+      expect(suggestions.some(s => s.display.includes('/docs'))).toBe(true);
     });
   });
 

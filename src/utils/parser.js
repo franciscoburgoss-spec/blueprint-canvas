@@ -1,19 +1,18 @@
 const COMMAND_PATTERNS = {
   CREATE_PROJECT: /^\/create\s+project\s+"([^"]+)"/i,
+  USE_PROJECT: /^\/use\s+"([^"]+)"$/i,
+  CURRENT: /^\/current$/i,
   LOAD_DOCUMENT: /^\/doc\s+([\w-]+)(?:\s+(.+))?/i,
   ADD_OBSERVATION: /^\/obs\s+([\w-]+)\s+(Coherencia Global|Coherencia Interna|Observación Propia):\s*"([^"]+)"\s*\|\s*Fuente:\s*(.+)$/i,
   EDIT_OBSERVATION: /^\/edit\s+(OBS-[\w-]+)\s+(.+)/i,
-  
-  // Notas separadas
   PROJECT_NOTE: /^\/note\s+"([^"]+)"/i,
   DOCUMENT_NOTE: /^\/doc-note\s+"([^"]+)"/i,
-  
   HELP: /^\/help$/i,
   LIST: /^\/list\s+(projects|docs|obs|notes)$/i,
   DELETE: /^\/delete\s+(project|doc|obs)\s+(.+)$/i,
   APPROVE: /^\/approve\s+(OBS-[\w-]+)$/i,
   REJECT: /^\/reject\s+(OBS-[\w-]+)$/i,
-  EXPORT: /^\/export\s+(markdown|json)$/i,
+  EXPORT: /^\/export\s+(markdown|json|pdf)$/i,
   CLEAR: /^\/clear$/i,
   STATUS: /^\/status$/i,
   SEARCH: /^\/search\s+"([^"]+)"$/i,
@@ -27,6 +26,7 @@ const COMMAND_PATTERNS = {
   IMPORT: /^\/import\s+(.+)$/is,
   TIMELINE: /^\/timeline$/i,
   COMPARE: /^\/compare$/i,
+  DOCS: /^\/docs$/i,
 };
 
 export const parseCommand = (input) => {
@@ -38,6 +38,10 @@ export const parseCommand = (input) => {
       switch (command) {
         case 'CREATE_PROJECT':
           return { type: 'CREATE_PROJECT', name: match[1] };
+        case 'USE_PROJECT':
+          return { type: 'USE_PROJECT', name: match[1] };
+        case 'CURRENT':
+          return { type: 'CURRENT' };
         case 'LOAD_DOCUMENT':
           return { type: 'LOAD_DOCUMENT', docName: match[1], discipline: match[2]?.trim() || 'General' };
         case 'ADD_OBSERVATION':
@@ -86,6 +90,8 @@ export const parseCommand = (input) => {
           return { type: 'TIMELINE' };
         case 'COMPARE':
           return { type: 'COMPARE' };
+        case 'DOCS':
+          return { type: 'DOCS' };
       }
     }
   }
@@ -105,6 +111,8 @@ COMANDOS DISPONIBLES:
 
 GESTIÓN DE PROYECTOS:
   /create project "nombre"         Crea un nuevo proyecto
+  /use "nombre"                    Cambia al proyecto indicado
+  /current                         Muestra el proyecto activo
   /list projects                   Lista todos los proyectos
   /delete project "nombre"         Elimina un proyecto
   /status                          Muestra el estado actual
@@ -142,9 +150,11 @@ BÚSQUEDA Y FILTROS:
 EXPORTACIÓN:
   /export markdown                 Exporta informe en Markdown
   /export json                     Exporta datos en JSON
+  /export pdf                      Exporta informe profesional en PDF
 
 UTILIDADES:
-  /help                            Muestra esta ayuda
+  /help                            Muestra ayuda rápida
+  /docs                            Abrir documentación completa
   /shortcuts                       Muestra atajos de teclado
   /timeline                        Muestra historial de cambios
   /clear                           Limpia el historial del chat

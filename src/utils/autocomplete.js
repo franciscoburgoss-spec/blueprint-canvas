@@ -1,34 +1,52 @@
 export const COMMANDS = [
-  { cmd: '/create project "nombre"', desc: 'Crear proyecto', category: 'proyecto' },
-  { cmd: '/doc NOMBRE [disciplina]', desc: 'Cargar documento', category: 'documento' },
-  { cmd: '/obs DOC TIPO: "texto" | Fuente: origen', desc: 'Agregar observación', category: 'observación' },
-  { cmd: '/note "texto"', desc: 'Nota del proyecto', category: 'nota' },
-  { cmd: '/doc-note "texto"', desc: 'Nota del documento', category: 'nota' },
-  { cmd: '/list projects', desc: 'Listar proyectos', category: 'listado' },
-  { cmd: '/list docs', desc: 'Listar documentos', category: 'listado' },
-  { cmd: '/list obs', desc: 'Listar observaciones', category: 'listado' },
-  { cmd: '/list notes', desc: 'Listar notas', category: 'listado' },
-  { cmd: '/edit OBS-ID nuevo texto', desc: 'Editar observación', category: 'observación' },
-  { cmd: '/approve OBS-ID', desc: 'Aprobar observación', category: 'observación' },
-  { cmd: '/reject OBS-ID', desc: 'Rechazar observación', category: 'observación' },
-  { cmd: '/delete project "nombre"', desc: 'Eliminar proyecto', category: 'proyecto' },
-  { cmd: '/delete doc NOMBRE', desc: 'Eliminar documento', category: 'documento' },
-  { cmd: '/delete obs OBS-ID', desc: 'Eliminar observación', category: 'observación' },
-  { cmd: '/tag OBS-ID "etiqueta"', desc: 'Etiquetar observación', category: 'observación' },
-  { cmd: '/priority OBS-ID alta|media|baja', desc: 'Asignar prioridad', category: 'observación' },
-  { cmd: '/comment OBS-ID "comentario"', desc: 'Comentar observación', category: 'observación' },
-  { cmd: '/search "texto"', desc: 'Buscar observaciones', category: 'búsqueda' },
-  { cmd: '/filter type "tipo"', desc: 'Filtrar por tipo', category: 'búsqueda' },
-  { cmd: '/filter status "estado"', desc: 'Filtrar por estado', category: 'búsqueda' },
-  { cmd: '/export markdown', desc: 'Exportar a Markdown', category: 'exportación' },
-  { cmd: '/export json', desc: 'Exportar a JSON', category: 'exportación' },
-  { cmd: '/review', desc: 'Modo revisión', category: 'utilidad' },
-  { cmd: '/status', desc: 'Estado del proyecto', category: 'utilidad' },
-  { cmd: '/timeline', desc: 'Historial de cambios', category: 'utilidad' },
-  { cmd: '/compare', desc: 'Comparar documentos', category: 'utilidad' },
-  { cmd: '/help', desc: 'Mostrar ayuda', category: 'utilidad' },
-  { cmd: '/shortcuts', desc: 'Atajos de teclado', category: 'utilidad' },
-  { cmd: '/clear', desc: 'Limpiar chat', category: 'utilidad' },
+  // Gestión de Proyectos
+  { cmd: '/create project "nombre"', desc: 'Crear un nuevo proyecto', category: 'proyecto', example: '/create project "Edificio Central"' },
+  { cmd: '/use "nombre"', desc: 'Cambiar al proyecto indicado', category: 'proyecto', example: '/use "Edificio Central"' },
+  { cmd: '/current', desc: 'Mostrar el proyecto activo', category: 'proyecto', example: '/current' },
+  { cmd: '/list projects', desc: 'Listar todos los proyectos', category: 'listado', example: '/list projects' },
+  { cmd: '/delete project "nombre"', desc: 'Eliminar un proyecto', category: 'proyecto', example: '/delete project "Edificio Central"' },
+  { cmd: '/status', desc: 'Mostrar estado del proyecto', category: 'utilidad', example: '/status' },
+  
+  // Gestión de Documentos
+  { cmd: '/doc NOMBRE [disciplina]', desc: 'Cargar o crear un documento', category: 'documento', example: '/doc ELEC-01 Eléctrica' },
+  { cmd: '/list docs', desc: 'Listar documentos del proyecto', category: 'listado', example: '/list docs' },
+  { cmd: '/delete doc NOMBRE', desc: 'Eliminar un documento', category: 'documento', example: '/delete doc ELEC-01' },
+  { cmd: '/compare', desc: 'Comparar documentos lado a lado', category: 'utilidad', example: '/compare' },
+  
+  // Gestión de Observaciones
+  { cmd: '/obs DOC TIPO: "texto" | Fuente: origen', desc: 'Agregar una observación', category: 'observación', example: '/obs ELEC-01 Coherencia Global: "Tensión alta" | Fuente: Sección 4.2' },
+  { cmd: '/list obs', desc: 'Listar todas las observaciones', category: 'listado', example: '/list obs' },
+  { cmd: '/edit OBS-ID nuevo texto', desc: 'Editar una observación', category: 'observación', example: '/edit OBS-2024-001 Texto corregido' },
+  { cmd: '/approve OBS-ID', desc: 'Aprobar una observación', category: 'observación', example: '/approve OBS-2024-001' },
+  { cmd: '/reject OBS-ID', desc: 'Rechazar una observación', category: 'observación', example: '/reject OBS-2024-001' },
+  { cmd: '/delete obs OBS-ID', desc: 'Eliminar una observación', category: 'observación', example: '/delete obs OBS-2024-001' },
+  { cmd: '/tag OBS-ID "etiqueta"', desc: 'Agregar etiqueta a observación', category: 'observación', example: '/tag OBS-2024-001 "crítico"' },
+  { cmd: '/priority OBS-ID alta|media|baja', desc: 'Asignar prioridad', category: 'observación', example: '/priority OBS-2024-001 alta' },
+  { cmd: '/comment OBS-ID "comentario"', desc: 'Agregar comentario', category: 'observación', example: '/comment OBS-2024-001 "Revisar con HVAC"' },
+  { cmd: '/review', desc: 'Modo revisión (lista pendientes)', category: 'utilidad', example: '/review' },
+  
+  // Notas
+  { cmd: '/note "texto"', desc: 'Agregar nota al proyecto', category: 'nota', example: '/note "Reunión con cliente el martes"' },
+  { cmd: '/doc-note "texto"', desc: 'Agregar nota al documento', category: 'nota', example: '/doc-note "Verificar tensión nominal"' },
+  { cmd: '/list notes', desc: 'Listar notas del proyecto y documento', category: 'listado', example: '/list notes' },
+  
+  // Búsqueda y Filtros
+  { cmd: '/search "texto"', desc: 'Buscar observaciones', category: 'búsqueda', example: '/search "tensión"' },
+  { cmd: '/filter type "tipo"', desc: 'Filtrar por tipo', category: 'búsqueda', example: '/filter type "Coherencia Global"' },
+  { cmd: '/filter status "estado"', desc: 'Filtrar por estado', category: 'búsqueda', example: '/filter status "pendiente"' },
+  
+  // Exportación
+  { cmd: '/export markdown', desc: 'Exportar informe en Markdown', category: 'exportación', example: '/export markdown' },
+  { cmd: '/export json', desc: 'Exportar datos en JSON', category: 'exportación', example: '/export json' },
+  { cmd: '/export pdf', desc: 'Exportar informe profesional en PDF', category: 'exportación', example: '/export pdf' },
+  
+  // Utilidades
+  { cmd: '/help', desc: 'Mostrar ayuda rápida', category: 'utilidad', example: '/help' },
+  { cmd: '/docs', desc: 'Abrir documentación completa', category: 'utilidad', example: '/docs' },
+  { cmd: '/shortcuts', desc: 'Mostrar atajos de teclado', category: 'utilidad', example: '/shortcuts' },
+  { cmd: '/timeline', desc: 'Mostrar historial de cambios', category: 'utilidad', example: '/timeline' },
+  { cmd: '/clear', desc: 'Limpiar historial del chat', category: 'utilidad', example: '/clear' },
+  { cmd: '/import {json}', desc: 'Importar proyecto desde JSON', category: 'utilidad', example: '/import {"name":"Proyecto","documents":[]}' },
 ];
 
 export const OBSERVATION_TYPES = [
@@ -50,10 +68,7 @@ export const getSuggestions = (input, context = {}) => {
   const parts = input.trim().split(/\s+/);
   const command = parts[0];
   
-  // Posición: si termina con espacio, estamos listos para el siguiente argumento
   const position = endsWithSpace ? parts.length : parts.length - 1;
-  
-  // Para filtrar, usamos solo la parte relevante del input
   const currentArg = endsWithSpace ? '' : parts[parts.length - 1].toLowerCase();
   
   const suggestions = [];
@@ -70,6 +85,7 @@ export const getSuggestions = (input, context = {}) => {
         display: c.cmd,
         description: c.desc,
         category: c.category,
+        example: c.example,
         insertText: c.cmd,
       });
     });
@@ -229,7 +245,7 @@ export const getSuggestions = (input, context = {}) => {
   
   // /export en posición 1
   if (command === '/export' && position === 1) {
-    ['markdown', 'json'].forEach(f => {
+    ['markdown', 'json', 'pdf'].forEach(f => {
       suggestions.push({
         type: 'context',
         display: f,
@@ -240,7 +256,7 @@ export const getSuggestions = (input, context = {}) => {
     });
   }
   
-  // Filtrar basado en el argumento actual (no en todo el input)
+  // Filtrar basado en el argumento actual
   const filtered = suggestions.filter(s => 
     s.display.toLowerCase().includes(currentArg) || 
     s.description.toLowerCase().includes(currentArg)

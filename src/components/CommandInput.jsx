@@ -7,7 +7,7 @@ import { useProjectStore } from '../store/projectStore';
 import { useKeyboardShortcuts, SHORTCUTS } from '../hooks/useKeyboardShortcuts';
 import { Terminal, Keyboard } from 'lucide-react';
 
-export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator }) => {
+export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator, onShowDocs }) => {
   const [input, setInput] = useState('');
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -79,6 +79,8 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator 
     const result = parseCommand(input);
     
     switch (result.type) {
+            case 'USE_PROJECT': store.useProject(result.name); break;
+      case 'CURRENT': handleCurrent(); break;
       case 'CREATE_PROJECT': store.createProject(result.name); break;
       case 'LOAD_DOCUMENT': store.loadDocument(result.docName, result.discipline); break;
       case 'ADD_OBSERVATION': store.addObservation(result.docName, result.obsType, result.text, result.source); break;
@@ -106,6 +108,7 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator 
       case 'REVIEW': handleReview(); break;
       case 'TIMELINE': handleTimeline(); break;
       case 'COMPARE': if (onShowComparator) onShowComparator(); break;
+      case 'DOCS': if (onShowDocs) onShowDocs(); break;
       case 'SHORTCUTS':
         useProjectStore.setState((state) => ({
           annotations: [...state.annotations, { id: Date.now(), type: 'info', message: `ATAJOS:\n${SHORTCUTS.map(s => `  ${s.keys.padEnd(15)} ${s.description}`).join('\n')}`, timestamp: Date.now() }]
@@ -186,6 +189,38 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator 
     if (store.timeline.length === 0) return;
     const message = `TIMELINE:\n${store.timeline.slice(-10).reverse().map(e => `[${new Date(e.timestamp).toLocaleTimeString()}] ${e.details}`).join('\n')}`;
     useProjectStore.setState((state) => ({ annotations: [...state.annotations, { id: Date.now(), type: 'info', message, timestamp: Date.now() }] }));
+  };
+
+  
+  const handleCurrent = () => {
+    const project = store.projects.find(p => p.id === store.activeProjectId);
+    if (!project) {
+      useProjectStore.setState((state) => ({ 
+        annotations: [...state.annotations, { 
+          id: Date.now(), 
+          type: 'info', 
+          message: '[INFO] No hay proyecto activo. Usa /create project o /use "nombre"', 
+          timestamp: Date.now() 
+        }] 
+      }));
+      return;
+    }
+    const totalObs = project.documents.reduce((sum, doc) => sum + doc.observations.length, 0);
+    const approvedObs = project.documents.reduce((sum, doc) => sum + doc.observations.filter(o => o.status === 'aprobada').length, 0);
+    const message = `PROYECTO ACTIVO: ${project.name}
+  ID: ${project.id}
+  Documentos: ${project.documents.length}
+  Observaciones: ${totalObs} (${approvedObs} aprobadas)
+  Notas del proyecto: ${project.notes.length}
+  Creado: ${new Date(project.createdAt).toLocaleString()}`;
+    useProjectStore.setState((state) => ({ 
+      annotations: [...state.annotations, { 
+        id: Date.now(), 
+        type: 'info', 
+        message, 
+        timestamp: Date.now() 
+      }] 
+    }));
   };
 
   const handleStatus = () => {

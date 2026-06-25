@@ -77,6 +77,40 @@ export const useProjectStore = create(
         }));
       },
 
+      useProject: (projectName) => {
+        const { projects } = get();
+        const project = projects.find(p => p.name === projectName);
+        
+        if (!project) {
+          set((state) => ({
+            annotations: [...state.annotations, { 
+              id: Date.now(), 
+              type: 'error', 
+              message: `[ERROR] Proyecto "${projectName}" no encontrado`, 
+              timestamp: Date.now() 
+            }],
+          }));
+          return;
+        }
+
+        set((state) => ({
+          activeProjectId: project.id,
+          activeDocumentId: null,
+          annotations: [...state.annotations, { 
+            id: Date.now(), 
+            type: 'success', 
+            message: `[OK] Cambiando a proyecto: ${projectName}`, 
+            timestamp: Date.now() 
+          }],
+          timeline: [...state.timeline, { 
+            id: generateTimelineId(), 
+            action: 'USE_PROJECT', 
+            details: `Cambiando a proyecto "${projectName}"`, 
+            timestamp: Date.now() 
+          }],
+        }));
+      },
+
       loadDocument: (docName, discipline = 'General') => {
         const { activeProjectId } = get();
         if (!activeProjectId) {
