@@ -27,7 +27,7 @@ describe('Chat Order - Mensajes en orden cronológico', () => {
   it('debe mantener las anotaciones en orden de inserción', () => {
     useProjectStore.getState().createProject('Test');
     useProjectStore.getState().loadDocument('ELEC-01');
-    useProjectStore.getState().addNote('Nota');
+    useProjectStore.getState().addDocumentNote('Nota');
     
     const state = useProjectStore.getState();
     expect(state.annotations.length).toBe(3);

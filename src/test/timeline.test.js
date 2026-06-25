@@ -57,11 +57,11 @@ describe('Timeline', () => {
   it('debe registrar la adición de una nota en el timeline', () => {
     useProjectStore.getState().createProject('Test');
     useProjectStore.getState().loadDocument('ELEC-01');
-    useProjectStore.getState().addNote('Test note');
+    useProjectStore.getState().addDocumentNote('Test note');
     
     const state = useProjectStore.getState();
     expect(state.timeline.length).toBe(3);
-    expect(state.timeline[2].action).toBe('ADD_NOTE');
+    expect(state.timeline[2].action).toBe('ADD_DOCUMENT_NOTE');
   });
 
   it('debe mantener el orden cronológico del timeline', () => {

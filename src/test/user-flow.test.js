@@ -22,7 +22,7 @@ describe('User Flow - Comportamiento real del usuario', () => {
       useProjectStore.getState().loadDocument('ELEC-01');
       
       // Usuario agrega nota
-      useProjectStore.getState().addNote('Nota importante');
+      useProjectStore.getState().addDocumentNote('Nota importante');
       
       const state = useProjectStore.getState();
       const doc = state.projects[0].documents[0];
@@ -36,7 +36,7 @@ describe('User Flow - Comportamiento real del usuario', () => {
       useProjectStore.getState().createProject('Test');
       
       // Usuario intenta agregar nota
-      useProjectStore.getState().addNote('Nota perdida');
+      useProjectStore.getState().addDocumentNote('Nota perdida');
       
       const state = useProjectStore.getState();
       
@@ -51,11 +51,11 @@ describe('User Flow - Comportamiento real del usuario', () => {
       
       // Primer documento
       useProjectStore.getState().loadDocument('ELEC-01');
-      useProjectStore.getState().addNote('Nota ELEC');
+      useProjectStore.getState().addDocumentNote('Nota ELEC');
       
       // Segundo documento
       useProjectStore.getState().loadDocument('MECH-02');
-      useProjectStore.getState().addNote('Nota MECH');
+      useProjectStore.getState().addDocumentNote('Nota MECH');
       
       // Volver al primer documento
       useProjectStore.getState().loadDocument('ELEC-01');
@@ -156,7 +156,7 @@ describe('User Flow - Comportamiento real del usuario', () => {
     it('debe mantener las anotaciones en orden cronológico', () => {
       useProjectStore.getState().createProject('Test');
       useProjectStore.getState().loadDocument('ELEC-01');
-      useProjectStore.getState().addNote('Nota');
+      useProjectStore.getState().addDocumentNote('Nota');
       
       const state = useProjectStore.getState();
       expect(state.annotations.length).toBeGreaterThan(0);

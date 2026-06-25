@@ -44,7 +44,7 @@ describe('Parser', () => {
       const input = '/note "Verificar con equipo HVAC"';
       const result = parseCommand(input);
       
-      expect(result.type).toBe('ADD_NOTE');
+      expect(result.type).toBe('PROJECT_NOTE');
       expect(result.text).toBe('Verificar con equipo HVAC');
     });
 

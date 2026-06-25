@@ -75,11 +75,11 @@ describe('Document Comparator', () => {
       
       // Cargar ELEC-01 y agregar nota
       useProjectStore.getState().loadDocument('ELEC-01');
-      useProjectStore.getState().addNote('Nota ELEC');
+      useProjectStore.getState().addDocumentNote('Nota ELEC');
       
       // Cargar MECH-02 y agregar nota
       useProjectStore.getState().loadDocument('MECH-02');
-      useProjectStore.getState().addNote('Nota MECH');
+      useProjectStore.getState().addDocumentNote('Nota MECH');
       
       const state = useProjectStore.getState();
       const project = state.projects[0];

@@ -72,7 +72,7 @@ describe('ProjectStore', () => {
     it('debe agregar una nota al documento activo', () => {
       useProjectStore.getState().createProject('Test Project');
       useProjectStore.getState().loadDocument('ELEC-01', 'Eléctrica');
-      useProjectStore.getState().addNote('Test note');
+      useProjectStore.getState().addDocumentNote('Test note');
       
       const state = useProjectStore.getState();
       const doc = state.projects[0].documents[0];

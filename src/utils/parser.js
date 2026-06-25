@@ -3,10 +3,13 @@ const COMMAND_PATTERNS = {
   LOAD_DOCUMENT: /^\/doc\s+([\w-]+)(?:\s+(.+))?/i,
   ADD_OBSERVATION: /^\/obs\s+([\w-]+)\s+(Coherencia Global|Coherencia Interna|Observación Propia):\s*"([^"]+)"\s*\|\s*Fuente:\s*(.+)$/i,
   EDIT_OBSERVATION: /^\/edit\s+(OBS-[\w-]+)\s+(.+)/i,
-  ADD_NOTE: /^\/note\s+"([^"]+)"/i,
-  HELP: /^\/help$/i,
   
-  LIST: /^\/list\s+(projects|docs|obs)$/i,
+  // Notas separadas
+  PROJECT_NOTE: /^\/note\s+"([^"]+)"/i,
+  DOCUMENT_NOTE: /^\/doc-note\s+"([^"]+)"/i,
+  
+  HELP: /^\/help$/i,
+  LIST: /^\/list\s+(projects|docs|obs|notes)$/i,
   DELETE: /^\/delete\s+(project|doc|obs)\s+(.+)$/i,
   APPROVE: /^\/approve\s+(OBS-[\w-]+)$/i,
   REJECT: /^\/reject\s+(OBS-[\w-]+)$/i,
@@ -36,27 +39,15 @@ export const parseCommand = (input) => {
         case 'CREATE_PROJECT':
           return { type: 'CREATE_PROJECT', name: match[1] };
         case 'LOAD_DOCUMENT':
-          return { 
-            type: 'LOAD_DOCUMENT', 
-            docName: match[1],
-            discipline: match[2]?.trim() || 'General'
-          };
+          return { type: 'LOAD_DOCUMENT', docName: match[1], discipline: match[2]?.trim() || 'General' };
         case 'ADD_OBSERVATION':
-          return {
-            type: 'ADD_OBSERVATION',
-            docName: match[1],
-            obsType: match[2],
-            text: match[3],
-            source: match[4].trim(),
-          };
+          return { type: 'ADD_OBSERVATION', docName: match[1], obsType: match[2], text: match[3], source: match[4].trim() };
         case 'EDIT_OBSERVATION':
-          return {
-            type: 'EDIT_OBSERVATION',
-            id: match[1],
-            newText: match[2],
-          };
-        case 'ADD_NOTE':
-          return { type: 'ADD_NOTE', text: match[1] };
+          return { type: 'EDIT_OBSERVATION', id: match[1], newText: match[2] };
+        case 'PROJECT_NOTE':
+          return { type: 'PROJECT_NOTE', text: match[1] };
+        case 'DOCUMENT_NOTE':
+          return { type: 'DOCUMENT_NOTE', text: match[1] };
         case 'HELP':
           return { type: 'HELP' };
         case 'LIST':
@@ -99,10 +90,7 @@ export const parseCommand = (input) => {
     }
   }
 
-  return {
-    type: 'INVALID_COMMAND',
-    error: 'Comando no reconocido. Usa /help para ver los comandos disponibles',
-  };
+  return { type: 'INVALID_COMMAND', error: 'Comando no reconocido. Usa /help para ver los comandos disponibles' };
 };
 
 export const generateObservationId = () => {
@@ -142,7 +130,9 @@ GESTIÓN DE OBSERVACIONES:
   /review                          Modo revisión (lista pendientes)
 
 NOTAS:
-  /note "texto"                    Agrega una nota al panel derecho
+  /note "texto"                    Agrega una nota al PROYECTO
+  /doc-note "texto"                Agrega una nota al DOCUMENTO activo
+  /list notes                      Lista notas del proyecto y documento
 
 BÚSQUEDA Y FILTROS:
   /search "texto"                  Busca observaciones
@@ -158,26 +148,5 @@ UTILIDADES:
   /shortcuts                       Muestra atajos de teclado
   /timeline                        Muestra historial de cambios
   /clear                           Limpia el historial del chat
-  /template "nombre"               Carga una plantilla
-
-ATAJOS DE TECLADO:
-  ⌘/Ctrl + K    Enfocar input
-  ⌘/Ctrl + L    Limpiar chat
-  ⌘/Ctrl + H    Mostrar ayuda
-  ⌘/Ctrl + S    Mostrar status
-  ⌘/Ctrl + E    Exportar markdown
-  ⌘/Ctrl + N    Nueva nota
-  Esc           Limpiar y salir del input
-
-EJEMPLOS:
-  /create project "Edificio Central"
-  /doc ELEC-01 Eléctrica
-  /obs ELEC-01 Coherencia Global: "Tensión no coincide" | Fuente: Sección 4.2
-  /note "Verificar con equipo HVAC"
-  /approve OBS-2026-001
-  /review
-  /timeline
-  /compare
-  /export markdown
   `;
 };

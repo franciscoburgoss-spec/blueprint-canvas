@@ -16,7 +16,7 @@ describe('Drag & Drop - Convertir Notas en Observaciones', () => {
   it('debe permitir agregar una nota a un documento', () => {
     useProjectStore.getState().createProject('Test');
     useProjectStore.getState().loadDocument('ELEC-01');
-    useProjectStore.getState().addNote('Nota de prueba');
+    useProjectStore.getState().addDocumentNote('Nota de prueba');
     
     const state = useProjectStore.getState();
     const doc = state.projects[0].documents[0];
@@ -27,8 +27,8 @@ describe('Drag & Drop - Convertir Notas en Observaciones', () => {
   it('debe tener notas con ID único', () => {
     useProjectStore.getState().createProject('Test');
     useProjectStore.getState().loadDocument('ELEC-01');
-    useProjectStore.getState().addNote('Nota 1');
-    useProjectStore.getState().addNote('Nota 2');
+    useProjectStore.getState().addDocumentNote('Nota 1');
+    useProjectStore.getState().addDocumentNote('Nota 2');
     
     const state = useProjectStore.getState();
     const doc = state.projects[0].documents[0];
@@ -38,7 +38,7 @@ describe('Drag & Drop - Convertir Notas en Observaciones', () => {
   it('debe tener notas con timestamp', () => {
     useProjectStore.getState().createProject('Test');
     useProjectStore.getState().loadDocument('ELEC-01');
-    useProjectStore.getState().addNote('Nota de prueba');
+    useProjectStore.getState().addDocumentNote('Nota de prueba');
     
     const state = useProjectStore.getState();
     const doc = state.projects[0].documents[0];
@@ -49,11 +49,11 @@ describe('Drag & Drop - Convertir Notas en Observaciones', () => {
   it('debe registrar la adición de nota en el timeline', () => {
     useProjectStore.getState().createProject('Test');
     useProjectStore.getState().loadDocument('ELEC-01');
-    useProjectStore.getState().addNote('Nota de prueba');
+    useProjectStore.getState().addDocumentNote('Nota de prueba');
     
     const state = useProjectStore.getState();
     expect(state.timeline.length).toBeGreaterThan(0);
-    const noteEvent = state.timeline.find(e => e.action === 'ADD_NOTE');
+    const noteEvent = state.timeline.find(e => e.action === 'ADD_DOCUMENT_NOTE');
     expect(noteEvent).toBeDefined();
     expect(noteEvent.details).toContain('Nota de prueba');
   });
@@ -61,9 +61,9 @@ describe('Drag & Drop - Convertir Notas en Observaciones', () => {
   it('debe permitir múltiples notas en un documento', () => {
     useProjectStore.getState().createProject('Test');
     useProjectStore.getState().loadDocument('ELEC-01');
-    useProjectStore.getState().addNote('Nota 1');
-    useProjectStore.getState().addNote('Nota 2');
-    useProjectStore.getState().addNote('Nota 3');
+    useProjectStore.getState().addDocumentNote('Nota 1');
+    useProjectStore.getState().addDocumentNote('Nota 2');
+    useProjectStore.getState().addDocumentNote('Nota 3');
     
     const state = useProjectStore.getState();
     const doc = state.projects[0].documents[0];
@@ -75,11 +75,11 @@ describe('Drag & Drop - Convertir Notas en Observaciones', () => {
     
     // Cargar ELEC-01 y agregar nota
     useProjectStore.getState().loadDocument('ELEC-01');
-    useProjectStore.getState().addNote('Nota ELEC');
+    useProjectStore.getState().addDocumentNote('Nota ELEC');
     
     // Cargar MECH-02 y agregar nota
     useProjectStore.getState().loadDocument('MECH-02');
-    useProjectStore.getState().addNote('Nota MECH');
+    useProjectStore.getState().addDocumentNote('Nota MECH');
     
     const state = useProjectStore.getState();
     const project = state.projects[0];
@@ -97,7 +97,7 @@ describe('Drag & Drop - Convertir Notas en Observaciones', () => {
     useProjectStore.getState().createProject('Test');
     // No se carga ningún documento
     
-    useProjectStore.getState().addNote('Nota perdida');
+    useProjectStore.getState().addDocumentNote('Nota perdida');
     
     const state = useProjectStore.getState();
     const errorAnnotation = state.annotations.find(a => a.type === 'error');
