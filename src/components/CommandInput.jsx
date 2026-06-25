@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { parseCommand, getHelpText } from '../utils/parser';
+import { getSuggestions } from '../utils/autocomplete';
+import { AutocompleteSuggestions } from './AutocompleteSuggestions';
 import { exportToMarkdown, exportToJSON, downloadFile } from '../utils/exporter';
 import { useProjectStore } from '../store/projectStore';
 import { useKeyboardShortcuts, SHORTCUTS } from '../hooks/useKeyboardShortcuts';
@@ -9,9 +11,26 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator 
   const [input, setInput] = useState('');
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [suggestionIndex, setSuggestionIndex] = useState(-1);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef(null);
   
   const store = useProjectStore();
+
+  // Obtener sugerencias basadas en el input actual
+  const suggestions = useMemo(() => {
+    if (!showSuggestions) return [];
+    return getSuggestions(input, {
+      projects: store.projects,
+      activeProjectId: store.activeProjectId,
+      activeDocumentId: store.activeDocumentId,
+    });
+  }, [input, showSuggestions, store.projects, store.activeProjectId, store.activeDocumentId]);
+
+  // Resetear índice de sugerencia cuando cambian las sugerencias
+  useEffect(() => {
+    setSuggestionIndex(-1);
+  }, [suggestions]);
 
   const shortcutCallbacks = {
     executeCommand: (commandText) => {
@@ -38,10 +57,24 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator 
     }
   }, [editingCommand, onClearEditing]);
 
+  const applySuggestion = (suggestion) => {
+    setInput(suggestion.insertText);
+    setShowSuggestions(false);
+    setSuggestionIndex(-1);
+    inputRef.current?.focus();
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
+    // Si hay sugerencias y una está seleccionada, aplicarla
+    if (showSuggestions && suggestionIndex >= 0 && suggestions[suggestionIndex]) {
+      applySuggestion(suggestions[suggestionIndex]);
+      return;
+    }
+
+    setShowSuggestions(false);
     store.addCommandToHistory(input);
     const result = parseCommand(input);
     
@@ -50,11 +83,8 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator 
       case 'LOAD_DOCUMENT': store.loadDocument(result.docName, result.discipline); break;
       case 'ADD_OBSERVATION': store.addObservation(result.docName, result.obsType, result.text, result.source); break;
       case 'EDIT_OBSERVATION': store.editObservation(result.id, result.newText); break;
-      
-      // Nuevos comandos de notas
       case 'PROJECT_NOTE': store.addProjectNote(result.text); break;
       case 'DOCUMENT_NOTE': store.addDocumentNote(result.text); break;
-      
       case 'HELP':
         useProjectStore.setState((state) => ({
           annotations: [...state.annotations, { id: Date.now(), type: 'info', message: getHelpText(), timestamp: Date.now() }]
@@ -167,32 +197,109 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator 
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (history.length > 0) {
-        const newIndex = historyIndex === -1 ? history.length - 1 : Math.max(0, historyIndex - 1);
-        setHistoryIndex(newIndex);
-        setInput(history[newIndex]);
+    // Navegación de sugerencias
+    if (showSuggestions && suggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSuggestionIndex(prev => (prev + 1) % suggestions.length);
+        return;
       }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (historyIndex !== -1) {
-        const newIndex = historyIndex + 1;
-        if (newIndex >= history.length) { setHistoryIndex(-1); setInput(''); }
-        else { setHistoryIndex(newIndex); setInput(history[newIndex]); }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSuggestionIndex(prev => prev <= 0 ? suggestions.length - 1 : prev - 1);
+        return;
       }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const idx = suggestionIndex >= 0 ? suggestionIndex : 0;
+        applySuggestion(suggestions[idx]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowSuggestions(false);
+        setSuggestionIndex(-1);
+        return;
+      }
+    }
+
+    // Historial de comandos (solo si no hay sugerencias)
+    if (!showSuggestions || suggestions.length === 0) {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (history.length > 0) {
+          const newIndex = historyIndex === -1 ? history.length - 1 : Math.max(0, historyIndex - 1);
+          setHistoryIndex(newIndex);
+          setInput(history[newIndex]);
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex !== -1) {
+          const newIndex = historyIndex + 1;
+          if (newIndex >= history.length) {
+            setHistoryIndex(-1);
+            setInput('');
+          } else {
+            setHistoryIndex(newIndex);
+            setInput(history[newIndex]);
+          }
+        }
+      }
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    setInput(newValue);
+    
+    // Mostrar sugerencias solo si empieza con /
+    if (newValue.startsWith('/')) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="relative">
+      {showSuggestions && suggestions.length > 0 && (
+        <AutocompleteSuggestions
+          suggestions={suggestions}
+          selectedIndex={suggestionIndex}
+          onSelect={applySuggestion}
+        />
+      )}
       <div className="flex items-center gap-2 p-3 bg-blueprint-panel/50 border border-blueprint-grid/20 rounded">
         <Terminal size={16} className="text-blueprint-grid" />
         <span className="text-blueprint-grid font-mono">&gt;</span>
-        <input ref={inputRef} type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder='/create project "Mi Proyecto"' className="flex-1 bg-transparent border-none outline-none font-mono text-sm text-current placeholder-current/40" autoFocus />
-        <button type="button" className="text-blueprint-grid/60 hover:text-blueprint-grid transition-colors" title="Atajos"><Keyboard size={16} /></button>
+        <input
+          ref={inputRef}
+          type="text"
+          value={input}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          placeholder='/create project "Mi Proyecto"'
+          className="flex-1 bg-transparent border-none outline-none font-mono text-sm text-current placeholder-current/40"
+          autoFocus
+          autoComplete="off"
+          spellCheck="false"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            useProjectStore.setState((state) => ({
+              annotations: [...state.annotations, { id: Date.now(), type: 'info', message: `ATAJOS:\n${SHORTCUTS.map(s => `  ${s.keys.padEnd(15)} ${s.description}`).join('\n')}`, timestamp: Date.now() }]
+            }));
+          }}
+          className="text-blueprint-grid/60 hover:text-blueprint-grid transition-colors"
+          title="Ver atajos de teclado"
+        >
+          <Keyboard size={16} />
+        </button>
       </div>
-      <div className="mt-2 text-xs font-mono text-current/60">/note "texto" (Proyecto) | /doc-note "texto" (Documento)</div>
+      <div className="mt-2 text-xs font-mono text-current/60">
+        / para comandos · Tab para completar · ↑↓ para navegar
+      </div>
     </form>
   );
 };
