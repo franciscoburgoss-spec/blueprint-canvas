@@ -1,7 +1,10 @@
-/**
- * Exporta el proyecto a formato Markdown
- */
-export const exportToMarkdown = (project) => {
+import type { Project } from '../types';
+
+// ============================================
+// EXPORTACIÓN A MARKDOWN
+// ============================================
+
+export const exportToMarkdown = (project: Project): string => {
   let content = `# ${project.name}\n\n`;
   content += `**Informe de Revisión Técnica**\n\n`;
   content += `Generado el ${new Date().toLocaleDateString('es-ES', { 
@@ -88,17 +91,23 @@ export const exportToMarkdown = (project) => {
   return content;
 };
 
-/**
- * Exporta el proyecto a formato JSON
- */
-export const exportToJSON = (project) => {
+// ============================================
+// EXPORTACIÓN A JSON
+// ============================================
+
+export const exportToJSON = (project: Project): string => {
   return JSON.stringify(project, null, 2);
 };
 
-/**
- * Descarga un archivo al navegador
- */
-export const downloadFile = (content, fileName, mimeType) => {
+// ============================================
+// DESCARGA DE ARCHIVOS
+// ============================================
+
+export const downloadFile = (
+  content: string,
+  fileName: string,
+  mimeType: string
+): void => {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');

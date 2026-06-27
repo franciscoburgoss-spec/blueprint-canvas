@@ -1,3 +1,4 @@
+import React from 'react';
 import { ProjectTree } from './components/ProjectTree';
 import { ChatInterface } from './components/ChatInterface';
 import { NotesPanel } from './components/NotesPanel';
@@ -8,9 +9,9 @@ import { InstallBanner } from './components/InstallBanner';
 import { UpdateBanner } from './components/UpdateBanner';
 import { useEffect, useState } from 'react';
 
-function App() {
-  const [showComparator, setShowComparator] = useState(false);
-  const [showDocs, setShowDocs] = useState(false);
+const App: React.FC = () => {
+  const [showComparator, setShowComparator] = useState<boolean>(false);
+  const [showDocs, setShowDocs] = useState<boolean>(false);
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
@@ -40,3 +41,4 @@ function App() {
 }
 
 export default App;
+

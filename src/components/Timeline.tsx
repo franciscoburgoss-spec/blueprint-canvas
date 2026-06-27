@@ -1,8 +1,9 @@
+import React from 'react';
 import { useProjectStore } from '../store/projectStore';
 import { Clock, FolderPlus, FilePlus, AlertCircle, CheckCircle, XCircle, Tag, Flag, MessageSquare, StickyNote, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 
-const ACTION_ICONS = {
+const ACTION_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   CREATE_PROJECT: FolderPlus,
   DELETE_PROJECT: FolderPlus,
   LOAD_DOCUMENT: FilePlus,
@@ -18,7 +19,7 @@ const ACTION_ICONS = {
   ADD_NOTE: StickyNote,
 };
 
-const ACTION_COLORS = {
+const ACTION_COLORS: Record<string, string> = {
   CREATE_PROJECT: 'text-green-400',
   DELETE_PROJECT: 'text-red-400',
   LOAD_DOCUMENT: 'text-blue-400',
@@ -34,9 +35,9 @@ const ACTION_COLORS = {
   ADD_NOTE: 'text-pink-400',
 };
 
-export const Timeline = () => {
+export const Timeline: React.FC = () => {
   const { timeline } = useProjectStore();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   if (timeline.length === 0) {
     return null;

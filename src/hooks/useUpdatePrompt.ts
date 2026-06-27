@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 export const useUpdatePrompt = () => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [waitingWorker, setWaitingWorker] = useState(null);
+  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -15,12 +15,14 @@ export const useUpdatePrompt = () => {
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              setUpdateAvailable(true);
-              setWaitingWorker(newWorker);
-            }
-          });
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                setUpdateAvailable(true);
+                setWaitingWorker(newWorker);
+              }
+            });
+          }
         });
       });
 
@@ -34,14 +36,14 @@ export const useUpdatePrompt = () => {
     }
   }, []);
 
-  const applyUpdate = () => {
+  const applyUpdate = (): void => {
     if (waitingWorker) {
       waitingWorker.postMessage({ type: 'SKIP_WAITING' });
       window.location.reload();
     }
   };
 
-  const dismissUpdate = () => {
+  const dismissUpdate = (): void => {
     setUpdateAvailable(false);
   };
 

@@ -5,57 +5,57 @@ import { parseCommand } from '../utils/parser';
 
 describe('Documentation System', () => {
   describe('Parser', () => {
-    it('debe parsear /docs correctamente', () => {
+    it('debe parsear /docs correctamente', async () => {
       const result = parseCommand('/docs');
       expect(result.type).toBe('DOCS');
     });
 
-    it('debe ser case-insensitive para /docs', () => {
+    it('debe ser case-insensitive para /docs', async () => {
       const result = parseCommand('/DOCS');
       expect(result.type).toBe('DOCS');
     });
 
-    it('debe incluir /docs en la ayuda', () => {
-      const { getHelpText } = require('../utils/parser');
+    it('debe incluir /docs en la ayuda', async () => {
+      const { getHelpText } = await import('../utils/parser');
       const help = getHelpText();
       expect(help).toContain('/docs');
     });
   });
 
   describe('Autocomplete', () => {
-    it('debe incluir /docs en las sugerencias', () => {
-      const { getSuggestions } = require('../utils/autocomplete');
+    it('debe incluir /docs en las sugerencias', async () => {
+      const { getSuggestions } = await import('../utils/autocomplete');
       const suggestions = getSuggestions('/do');
       expect(suggestions.some(s => s.display.includes('/docs'))).toBe(true);
     });
 
-    it('debe incluir /current en las sugerencias', () => {
-      const { getSuggestions } = require('../utils/autocomplete');
+    it('debe incluir /current en las sugerencias', async () => {
+      const { getSuggestions } = await import('../utils/autocomplete');
       const suggestions = getSuggestions('/cu');
       expect(suggestions.some(s => s.display.includes('/current'))).toBe(true);
     });
 
-    it('debe incluir /use en las sugerencias', () => {
-      const { getSuggestions } = require('../utils/autocomplete');
+    it('debe incluir /use en las sugerencias', async () => {
+      const { getSuggestions } = await import('../utils/autocomplete');
       const suggestions = getSuggestions('/us');
       expect(suggestions.some(s => s.display.includes('/use'))).toBe(true);
     });
 
-    it('debe incluir /export pdf en las sugerencias', () => {
-      const { getSuggestions } = require('../utils/autocomplete');
+    it('debe incluir /export pdf en las sugerencias', async () => {
+      const { getSuggestions } = await import('../utils/autocomplete');
       const suggestions = getSuggestions('/export ');
       expect(suggestions.some(s => s.display === 'pdf')).toBe(true);
     });
   });
 
   describe('Componente DocumentationModal', () => {
-    it('debe existir el archivo DocumentationModal.jsx', () => {
-      const modalPath = path.join(process.cwd(), 'src/components/DocumentationModal.jsx');
+    it('debe existir el archivo DocumentationModal.tsx', async () => {
+      const modalPath = path.join(process.cwd(), 'src/components/DocumentationModal.tsx');
       expect(fs.existsSync(modalPath)).toBe(true);
     });
 
-    it('debe incluir secciones principales', () => {
-      const modalPath = path.join(process.cwd(), 'src/components/DocumentationModal.jsx');
+    it('debe incluir secciones principales', async () => {
+      const modalPath = path.join(process.cwd(), 'src/components/DocumentationModal.tsx');
       const content = fs.readFileSync(modalPath, 'utf8');
       expect(content).toContain('Gestión de Proyectos');
       expect(content).toContain('Gestión de Documentos');
@@ -66,8 +66,8 @@ describe('Documentation System', () => {
       expect(content).toContain('Utilidades');
     });
 
-    it('debe incluir ejemplos para cada comando', () => {
-      const modalPath = path.join(process.cwd(), 'src/components/DocumentationModal.jsx');
+    it('debe incluir ejemplos para cada comando', async () => {
+      const modalPath = path.join(process.cwd(), 'src/components/DocumentationModal.tsx');
       const content = fs.readFileSync(modalPath, 'utf8');
       expect(content).toContain('/create project');
       expect(content).toContain('/use');
@@ -77,8 +77,8 @@ describe('Documentation System', () => {
       expect(content).toContain('/export pdf');
     });
 
-    it('debe tener notas sobre sintaxis', () => {
-      const modalPath = path.join(process.cwd(), 'src/components/DocumentationModal.jsx');
+    it('debe tener notas sobre sintaxis', async () => {
+      const modalPath = path.join(process.cwd(), 'src/components/DocumentationModal.tsx');
       const content = fs.readFileSync(modalPath, 'utf8');
       expect(content).toContain('comillas');
       expect(content).toContain('espacios');

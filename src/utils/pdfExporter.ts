@@ -1,6 +1,28 @@
 import { jsPDF } from 'jspdf';
+import type { Project } from '../types';
 
-export const exportToPDF = (project) => {
+// ============================================
+// COLORES PROFESIONALES
+// ============================================
+
+const colors = {
+  primary: [15, 23, 42] as [number, number, number],
+  secondary: [71, 85, 105] as [number, number, number],
+  accent: [59, 130, 246] as [number, number, number],
+  text: [30, 41, 59] as [number, number, number],
+  muted: [100, 116, 139] as [number, number, number],
+  border: [226, 232, 240] as [number, number, number],
+  bg: [248, 250, 252] as [number, number, number],
+  success: [22, 163, 74] as [number, number, number],
+  warning: [234, 179, 8] as [number, number, number],
+  error: [220, 38, 38] as [number, number, number],
+};
+
+// ============================================
+// EXPORTACIÓN A PDF
+// ============================================
+
+export const exportToPDF = (project: Project): void => {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -10,23 +32,13 @@ export const exportToPDF = (project) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 20;
-  const contentWidth = pageWidth - (margin * 2);
+  const contentWidth = pageWidth - margin * 2;
   let y = margin;
 
-  const colors = {
-    primary: [15, 23, 42],
-    secondary: [71, 85, 105],
-    accent: [59, 130, 246],
-    text: [30, 41, 59],
-    muted: [100, 116, 139],
-    border: [226, 232, 240],
-    bg: [248, 250, 252],
-    success: [22, 163, 74],
-    warning: [234, 179, 8],
-    error: [220, 38, 38],
-  };
+  // ============================================
+  // PORTADA
+  // ============================================
 
-  // Portada
   doc.setFillColor(...colors.bg);
   doc.rect(0, 0, pageWidth, 80, 'F');
   doc.setDrawColor(...colors.accent);
@@ -42,13 +54,32 @@ export const exportToPDF = (project) => {
   doc.text('Informe de Revisión Técnica', margin, 50);
   doc.setFontSize(10);
   doc.setTextColor(...colors.muted);
-  const fecha = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+  const fecha = new Date().toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
   doc.text(`Generado el ${fecha}`, margin, 65);
 
+  // ============================================
+  // ESTADÍSTICAS
+  // ============================================
+
   const totalDocs = project.documents.length;
-  const totalObs = project.documents.reduce((sum, doc) => sum + doc.observations.length, 0);
-  const approvedObs = project.documents.reduce((sum, doc) => sum + doc.observations.filter(o => o.status === 'aprobada').length, 0);
-  const pendingObs = project.documents.reduce((sum, doc) => sum + doc.observations.filter(o => o.status === 'pendiente').length, 0);
+  const totalObs = project.documents.reduce(
+    (sum, doc) => sum + doc.observations.length,
+    0
+  );
+  const approvedObs = project.documents.reduce(
+    (sum, doc) =>
+      sum + doc.observations.filter(o => o.status === 'aprobada').length,
+    0
+  );
+  const pendingObs = project.documents.reduce(
+    (sum, doc) =>
+      sum + doc.observations.filter(o => o.status === 'pendiente').length,
+    0
+  );
 
   y = 100;
   const stats = [
@@ -60,7 +91,7 @@ export const exportToPDF = (project) => {
 
   const cardWidth = (contentWidth - 10) / stats.length;
   stats.forEach((stat, i) => {
-    const x = margin + (i * (cardWidth + 3));
+    const x = margin + i * (cardWidth + 3);
     doc.setFillColor(...colors.bg);
     doc.roundedRect(x, y, cardWidth, 25, 2, 2, 'F');
     doc.setFont('helvetica', 'bold');
@@ -73,9 +104,12 @@ export const exportToPDF = (project) => {
     doc.text(stat.label, x + cardWidth / 2, y + 20, { align: 'center' });
   });
 
-  // Páginas de documentos
+  // ============================================
+  // PÁGINAS DE DOCUMENTOS
+  // ============================================
+
   let docIndex = 1;
-  project.documents.forEach((docItem) => {
+  project.documents.forEach(docItem => {
     if (docItem.observations.length === 0) return;
     doc.addPage();
     y = margin;
@@ -95,9 +129,15 @@ export const exportToPDF = (project) => {
     y = 45;
 
     const grouped = {
-      'Coherencia Global': docItem.observations.filter(o => o.type === 'Coherencia Global' && o.status === 'aprobada'),
-      'Coherencia Interna': docItem.observations.filter(o => o.type === 'Coherencia Interna' && o.status === 'aprobada'),
-      'Observación Propia': docItem.observations.filter(o => o.type === 'Observación Propia' && o.status === 'aprobada'),
+      'Coherencia Global': docItem.observations.filter(
+        o => o.type === 'Coherencia Global' && o.status === 'aprobada'
+      ),
+      'Coherencia Interna': docItem.observations.filter(
+        o => o.type === 'Coherencia Interna' && o.status === 'aprobada'
+      ),
+      'Observación Propia': docItem.observations.filter(
+        o => o.type === 'Observación Propia' && o.status === 'aprobada'
+      ),
     };
 
     Object.entries(grouped).forEach(([type, obs]) => {
@@ -117,7 +157,11 @@ export const exportToPDF = (project) => {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(...colors.muted);
-      doc.text(`(${obs.length})`, margin + doc.getTextWidth(type) + 3, y);
+      doc.text(
+        `(${obs.length})`,
+        margin + doc.getTextWidth(type) + 3,
+        y
+      );
       y += 8;
 
       obs.forEach((o, i) => {
@@ -154,6 +198,10 @@ export const exportToPDF = (project) => {
     docIndex++;
   });
 
+  // ============================================
+  // PIE DE PÁGINA
+  // ============================================
+
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
@@ -164,9 +212,13 @@ export const exportToPDF = (project) => {
     doc.setFontSize(8);
     doc.setTextColor(...colors.muted);
     doc.text(project.name, margin, pageHeight - 10);
-    doc.text(`Página ${i} de ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+    doc.text(`Página ${i} de ${totalPages}`, pageWidth - margin, pageHeight - 10, {
+      align: 'right',
+    });
   }
 
-  const fileName = `${project.name.replace(/[^a-z0-9]/gi, '_')}_informe_${new Date().toISOString().split('T')[0]}.pdf`;
+  const fileName = `${project.name.replace(/[^a-z0-9]/gi, '_')}_informe_${
+    new Date().toISOString().split('T')[0]
+  }.pdf`;
   doc.save(fileName);
 };

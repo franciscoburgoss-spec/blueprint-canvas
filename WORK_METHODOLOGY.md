@@ -3,143 +3,131 @@
 ## Filosofía de Desarrollo
 
 ### Principios Fundamentales
-1. Tests First: Siempre verificar que los tests pasen despues de cada cambio
-2. Type Safety: TypeScript estricto, sin any innecesarios
-3. Incremental Changes: Migraciones archivo por archivo, no todo a la vez
-4. Documentation: Documentar decisiones técnicas y patrones
-5. User Experience: Feedback visual inmediato para todas las acciones
-
----
+- **Tests First**: Siempre verificar que los tests pasen después de cada cambio
+- **Type Safety**: TypeScript estricto, sin `any` innecesarios
+- **Incremental Changes**: Migraciones archivo por archivo, no todo a la vez
+- **Documentation**: Documentar decisiones técnicas y patrones
+- **User Experience**: Feedback visual inmediato para todas las acciones
 
 ## Flujo de Trabajo Estándar
 
 ### 1. Antes de Cualquier Cambio
-npm run test        # Verificar estado actual
-npm run type-check  # Verificar tipos
+    npm run test        # Verificar estado actual
+    npm run type-check  # Verificar tipos
 
 ### 2. Durante el Desarrollo
 - Hacer cambios pequeños y verificables
-- Ejecutar tests despues de cada cambio significativo
+- Ejecutar tests después de cada cambio significativo
 - Si un test falla, corregirlo inmediatamente antes de continuar
 
 ### 3. Después del Cambio
-npm run test        # Todos los tests deben pasar
-npm run type-check  # Sin errores de TypeScript
-npm run build       # Build exitoso
+    npm run test        # Todos los tests deben pasar
+    npm run type-check  # Sin errores de TypeScript
+    npm run build       # Build exitoso
 
 ### 4. Commit y Push
-git add .
-git commit -m "feat: descripción clara del cambio"
-git push
----
+    git add .
+    git commit -m "feat: descripción clara del cambio"
+    git push
 
 ## Patrones de Migración JavaScript a TypeScript
 
-### Patró: Migración de Componentes React
+### Patrón: Migración de Componentes React
 
-**Paso 1**: Renombrar archivo
-```bash
-mv Component.jsx Component.tsx
-```
+**Paso 1: Renombrar archivo**
+    mv Component.jsx Component.tsx
 
-**Paso 2**: Agregar tipos a props
-```typescript
-// ANTES (JavaScript)
-export const Component = ({ onClose, data }) => { ... }
+**Paso 2: Agregar tipos a props**
+    // ANTES (JavaScript)
+    export const Component = ({ onClose, data }) => { ... }
+    
+    // DESPUÉS (TypeScript)
+    interface ComponentProps {
+      onClose: () => void;
+      data: DataType;
+    }
+    export const Component: React.FC<ComponentProps> = ({ onClose, data }) => { ... }
 
-// DESPUIS (TypeScript)
-interface ComponentProps {
-  onClose: () => void;
-  data: DataType;
-}
-
-export const Component: React.FC<ComponentProps> = ({ onClose, data }) => { ... }
-```
-
-**Paso 3**: Agregar tipos a estados
-```typescript
-// ANTES
-const [value, setValue] = useState('');
-
-// DESPUIS
-const [value, setValue] = useState<string>('');
-```
-
----
+**Paso 3: Agregar tipos a estados**
+    // ANTES
+    const [value, setValue] = useState('');
+    
+    // DESPUÉS
+    const [value, setValue] = useState<string>('');
 
 ## Errores Comunes y Soluciones
 
 ### Error 1: Heredocs Largos se Cortan
 **Problema**: Al usar heredocs de bash con contenido muy largo, se corta.
+**Solución**: Usar base64 encoding o dividir en múltiples pasos pequeños.
 
-**Solución**: Usar base64 encoding para evitar problemas de interpretación de caracteres especiales.
-
-### Error 2: Tests Buscan Archivos .jsx Despues de Migración
-**Problema**: Tests fallan buscando archivos .jsx despues de migrar a .tsx
-
+### Error 2: Tests Buscan Archivos .jsx Después de Migración
+**Problema**: Tests fallan buscando archivos .jsx después de migrar a .tsx
 **Solución**: Actualizar referencias en tests
-```javascript
-const fs = require('fs');
-let content = fs.readFileSync('src/test/test.test.js', 'utf8');
-content = content.replace(/Component\.jsx/g, 'Component.tsx');
-fs.writeFileSync('src/test/test.test.js', content);
-```
----
+    const fs = require('fs');
+    let content = fs.readFileSync('src/test/test.test.js', 'utf8');
+    content = content.replace(/Component\.jsx/g, 'Component.tsx');
+    fs.writeFileSync('src/test/test.test.js', content);
 
 ### Error 3: Propiedad Opcional Usada Sin Verificación
 **Problema**:
-```typescript
-interface ParsedCommand {
-  name?: string;  // Opcional
-}
-store.createProject(result.name);  // ERROR
-```
+    interface ParsedCommand {
+      name?: string;  // Opcional
+    }
+    store.createProject(result.name);  // ERROR
 
 **Solución**: Agregar verificación
-```typescript
-if (result.name) {
-  store.createProject(result.name);
-}
-```
+    if (result.name) {
+      store.createProject(result.name);
+    }
 
 ### Error 4: Tipo Unknown en Catch
 **Problema**:
-```typescript
-catch (error) {
-  console.log(error.message);  // ERROR
-}
-```
+    catch (error) {
+      console.log(error.message);  // ERROR
+    }
 
 **Solución**:
-```typescript
-catch (error: unknown) {
-  const msg = error instanceof Error ? error.message : 'Error';
-  console.log(msg);
-}
-```
+    catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Error';
+      console.log(msg);
+    }
 
-### Error 5: Array con Tipo Impícito any[]
+### Error 5: Array con Tipo Implícito any[]
 **Problema**:
-```typescript
-const items = [];  // ERROR
-```
+    const items = [];  // ERROR
 
 **Solución**:
-```typescript
-const items: string[] = [];
-```
+    const items: string[] = [];
 
 ### Error 6: Import No Usado
 **Solución**: Eliminar imports no usados
 
 ### Error 7: Variable Declarada pero No Usada
 **Solución**: Usar underscore
-```typescript
-const [, setValue] = useState('');
-```
----
+    const [, setValue] = useState('');
 
-## Convenciones de C6digo
+### Error 8: Backticks de Markdown Cortan el Código en el Chat ⚠️ NUEVA REGLA OBLIGATORIA
+**Problema**: Al usar backticks de markdown dentro de strings Python que están dentro de heredocs de bash, el parser del chat se confunde y corta el código prematuramente.
+
+**Solución**: NUNCA usar backticks de markdown dentro de strings Python en heredocs. En su lugar, usar indentación simple (4 espacios) para código.
+
+**Ejemplo INCORRECTO** (corta el código):
+    content = """
+    ```bash
+    npm run test
+    ```
+    """
+
+**Ejemplo CORRECTO** (no corta):
+    content = """
+        npm run test  # Sin errores
+        npm run build # Build exitoso
+    """
+
+**Regla OBLIGATORIA**: Cuando generes código para archivos markdown dentro de heredocs de bash, usa indentación de 4 espacios en lugar de backticks de markdown.
+
+## Convenciones de Código
 
 ### Nomenclatura
 - **Componentes**: PascalCase.tsx (ej: ProjectTree.tsx)
@@ -151,106 +139,80 @@ const [, setValue] = useState('');
 - **Interfaces**: PascalCase (ej: Project)
 
 ### Estructura de Componentes
-```typescript
-// 1. Imports
-import { useState } from 'react';
-import type { Project } from '../types';
-
-// 2. Interfaces de props
-interface ComponentProps {
-  project: Project;
-}
-
-// 3. Componente
-export const Component: React.FC<ComponentProps> = ({ project }) => {
-  const [value, setValue] = useState<string>('');
-  return <div>...</div>;
-};
-```
-
----
+    // 1. Imports
+    import { useState } from 'react';
+    import type { Project } from '../types';
+    
+    // 2. Interfaces de props
+    interface ComponentProps {
+      project: Project;
+    }
+    
+    // 3. Componente
+    export const Component: React.FC<ComponentProps> = ({ project }) => {
+      const [value, setValue] = useState<string>('');
+      return <div>...</div>;
+    };
 
 ## Decisiones Técnicas
 
-### »Por quñ TypeScript Estricto?
-**Razones**:
+### ¿Por qué TypeScript Estricto?
 - Detecta errores en tiempo de compilación
 - Mejor autocompletado en el IDE
-- Documentación automática via tipos
+- Documentación automática vía tipos
 
 ### ¿Por qué Zustand en lugar de Redux?
-**Razones**:
 - Menos boilerplate
 - API más simple
 - Mejor integración con TypeScript
 
 ### ¿Por qué Tests en JavaScript?
-**Razones**:
 - Tests son más simples
-- Migración más répida
+- Migración más rápida
 - Vitest maneja bien la mezcla
 
 ### ¿Por qué Migración Incremental?
-**Razones**:
 - Menos riesgo de romper la app
 - Tests siguen pasando durante la migración
 - Permite pausar y continuar
----
 
 ## Checklist para Nuevas Features
 
 ### Antes de Implementar
-- [] ¯Hay tests existentes que puedan afectar?
-- [] ¯Necesito crear nuevos tests?
-- [] ¯�Qué tipos necesito definir?
+- [ ] ¿Hay tests existentes que puedan afectar?
+- [ ] ¿Necesito crear nuevos tests?
+- [ ] ¿Qué tipos necesito definir?
 
 ### Durante la Implementación
-- [] Tipos definidos correctamente
-- [] Tests actualizados/creados
-- [] npm run test pasa
-- [] npm run type-check pasa
+- [ ] Tipos definidos correctamente
+- [ ] Tests actualizados/creados
+- [ ] npm run test pasa
+- [ ] npm run type-check pasa
 
 ### Después de Implementar
-- [] npm run build exitoso
-- [] Commit con mensaje descriptivo
-- [] Push a GitHub
+- [ ] npm run build exitoso
+- [ ] Commit con mensaje descriptivo
+- [ ] Push a GitHub
 
----
-
-## Recursos útiles
+## Recursos Útiles
 
 ### Comandos de Verificación
-```bash
-npm run test          # Ejecutar tests
-npm run type-check    # Verificar tipos
-npm run build         # Build producción
-```
+    npm run test          # Ejecutar tests
+    npm run type-check    # Verificar tipos
+    npm run build         # Build producción
 
 ### Búsqueda de Errores
-```bash
-# Buscar archivos .jsx restantes
-find src -name "*.jsx"
-
-# Buscar imports específicos
-grep -r "from './Component'" src/
-
-# Buscar tests que buscan .jsx
-grep -r "\.jxs" src/test/
-```
+    # Buscar archivos .jsx restantes
+    find src -name "*.jsx"
+    
+    # Buscar imports específicos
+    grep -r "from './Component'" src/
+    
+    # Buscar tests que buscan .jsx
+    grep -r "\.jsx" src/test/
 
 ---
 
-## Continuación en Nuevo Chat
-
-**Mensaje para el nuevo chat**:
-```
-Continuemos con la migración TypeScript de Blueprint Canvas.
-Lee WORK_METHODOLOGY.md para entender nuestra dinámica.
-Empecemos corrigiendo los errores en CommandInput.tsx.
-```
-
----
-
-**Última actualización**: 26 de junio de 2026  
-**Versión**: v0.0.0  
+**Última actualización**: 26 de junio de 2026
+**Versión**: v1.0.0 (Migración TypeScript Completada)
 **Tests**: 193 pasando

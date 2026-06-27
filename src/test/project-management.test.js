@@ -15,24 +15,24 @@ describe('Project Management', () => {
   });
 
   describe('Parser', () => {
-    it('debe parsear /use "nombre" correctamente', () => {
+    it('debe parsear /use "nombre" correctamente', async () => {
       const result = parseCommand('/use "Edificio Central"');
       expect(result.type).toBe('USE_PROJECT');
       expect(result.name).toBe('Edificio Central');
     });
 
-    it('debe parsear /current correctamente', () => {
+    it('debe parsear /current correctamente', async () => {
       const result = parseCommand('/current');
       expect(result.type).toBe('CURRENT');
     });
 
-    it('debe ser case-insensitive para /use', () => {
+    it('debe ser case-insensitive para /use', async () => {
       const result = parseCommand('/USE "Test"');
       expect(result.type).toBe('USE_PROJECT');
     });
 
-    it('debe incluir /use y /current en la ayuda', () => {
-      const { getHelpText } = require('../utils/parser');
+    it('debe incluir /use y /current en la ayuda', async () => {
+      const { getHelpText } = await import('../utils/parser');
       const help = getHelpText();
       expect(help).toContain('/use');
       expect(help).toContain('/current');
@@ -40,7 +40,7 @@ describe('Project Management', () => {
   });
 
   describe('Store - useProject', () => {
-    it('debe cambiar al proyecto activo', () => {
+    it('debe cambiar al proyecto activo', async () => {
       useProjectStore.getState().createProject('Proyecto 1');
       useProjectStore.getState().createProject('Proyecto 2');
       
@@ -58,7 +58,7 @@ describe('Project Management', () => {
       expect(newState.activeProjectId).toBe(project1Id);
     });
 
-    it('debe resetear activeDocumentId al cambiar de proyecto', () => {
+    it('debe resetear activeDocumentId al cambiar de proyecto', async () => {
       useProjectStore.getState().createProject('Proyecto 1');
       useProjectStore.getState().loadDocument('DOC-1');
       
@@ -72,7 +72,7 @@ describe('Project Management', () => {
       expect(state.activeDocumentId).toBeNull();
     });
 
-    it('debe mostrar error si el proyecto no existe', () => {
+    it('debe mostrar error si el proyecto no existe', async () => {
       useProjectStore.getState().useProject('Inexistente');
       
       const state = useProjectStore.getState();
@@ -81,7 +81,7 @@ describe('Project Management', () => {
       expect(error.message).toContain('no encontrado');
     });
 
-    it('debe registrar el cambio en el timeline', () => {
+    it('debe registrar el cambio en el timeline', async () => {
       useProjectStore.getState().createProject('Proyecto 1');
       useProjectStore.getState().createProject('Proyecto 2');
       useProjectStore.getState().useProject('Proyecto 1');
@@ -92,7 +92,7 @@ describe('Project Management', () => {
       expect(useEvent.details).toContain('Proyecto 1');
     });
 
-    it('debe agregar anotación de éxito al cambiar', () => {
+    it('debe agregar anotación de éxito al cambiar', async () => {
       useProjectStore.getState().createProject('Proyecto 1');
       useProjectStore.getState().createProject('Proyecto 2');
       useProjectStore.getState().useProject('Proyecto 1');
@@ -105,7 +105,7 @@ describe('Project Management', () => {
   });
 
   describe('Flujo completo de usuario', () => {
-    it('debe permitir crear múltiples proyectos y cambiar entre ellos', () => {
+    it('debe permitir crear múltiples proyectos y cambiar entre ellos', async () => {
       // Crear 3 proyectos
       useProjectStore.getState().createProject('Edificio A');
       useProjectStore.getState().createProject('Edificio B');
@@ -138,7 +138,7 @@ describe('Project Management', () => {
       expect(state.projects[0].documents[0].name).toBe('ELEC-A');
     });
 
-    it('debe mantener las notas de proyecto al cambiar entre proyectos', () => {
+    it('debe mantener las notas de proyecto al cambiar entre proyectos', async () => {
       useProjectStore.getState().createProject('Proyecto 1');
       useProjectStore.getState().addProjectNote('Nota P1');
       

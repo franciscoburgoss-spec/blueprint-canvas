@@ -1,7 +1,8 @@
 import { useProjectStore } from '../store/projectStore';
 import { StickyNote, FileText, GripVertical } from 'lucide-react';
+import type { Note } from '../types';
 
-export const NotesPanel = () => {
+export const NotesPanel: React.FC = () => {
   const { activeProjectId, activeDocumentId, projects } = useProjectStore();
   
   const activeProject = projects.find(p => p.id === activeProjectId);
@@ -10,7 +11,7 @@ export const NotesPanel = () => {
   const projectNotes = activeProject?.notes || [];
   const documentNotes = activeDoc?.notes || [];
 
-  const handleNoteDragStart = (e, note) => {
+  const handleNoteDragStart = (e: React.DragEvent<HTMLDivElement>, note: Note) => {
     e.dataTransfer.setData('application/note', JSON.stringify(note));
     e.dataTransfer.effectAllowed = 'move';
   };

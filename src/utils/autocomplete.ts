@@ -1,4 +1,13 @@
-export const COMMANDS = [
+import {
+  type Suggestion,
+  type CommandDefinition,
+} from '../types';
+
+// ============================================
+// BASE DE COMANDOS DISPONIBLES
+// ============================================
+
+export const COMMANDS: CommandDefinition[] = [
   // Gestión de Proyectos
   { cmd: '/create project "nombre"', desc: 'Crear un nuevo proyecto', category: 'proyecto', example: '/create project "Edificio Central"' },
   { cmd: '/use "nombre"', desc: 'Cambiar al proyecto indicado', category: 'proyecto', example: '/use "Edificio Central"' },
@@ -58,7 +67,37 @@ export const OBSERVATION_TYPES = [
 export const PRIORITIES = ['alta', 'media', 'baja'];
 export const STATUSES = ['pendiente', 'aprobada', 'rechazada'];
 
-export const getSuggestions = (input, context = {}) => {
+// ============================================
+// CONTEXTO PARA SUGERENCIAS
+// ============================================
+
+interface AutocompleteContext {
+  projects?: Array<{
+    id: string;
+    name: string;
+    documents: Array<{
+      id: string;
+      name: string;
+      discipline: string;
+      observations: Array<{
+        id: string;
+        text: string;
+        status: string;
+      }>;
+    }>;
+  }>;
+  activeProjectId?: string | null;
+  activeDocumentId?: string | null;
+}
+
+// ============================================
+// FUNCIÓN PRINCIPAL DE SUGERENCIAS
+// ============================================
+
+export const getSuggestions = (
+  input: string,
+  context: AutocompleteContext = {}
+): Suggestion[] => {
   if (!input || !input.startsWith('/')) return [];
   
   const { projects = [], activeProjectId = null } = context;
@@ -71,7 +110,7 @@ export const getSuggestions = (input, context = {}) => {
   const position = endsWithSpace ? parts.length : parts.length - 1;
   const currentArg = endsWithSpace ? '' : parts[parts.length - 1].toLowerCase();
   
-  const suggestions = [];
+  const suggestions: Suggestion[] = [];
   
   // 1. Sugerir comandos si estamos en posición 0
   if (position === 0) {
@@ -112,7 +151,7 @@ export const getSuggestions = (input, context = {}) => {
       suggestions.push({
         type: 'context',
         display: doc.name,
-        description: `Documento`,
+        description: 'Documento',
         category: 'documento',
         insertText: `/obs ${doc.name} `,
       });
@@ -263,8 +302,8 @@ export const getSuggestions = (input, context = {}) => {
   );
   
   // Eliminar duplicados y limitar a 8 sugerencias
-  const unique = [];
-  const seen = new Set();
+  const unique: Suggestion[] = [];
+  const seen = new Set<string>();
   for (const s of filtered) {
     const key = `${s.display}-${s.insertText}`;
     if (!seen.has(key)) {

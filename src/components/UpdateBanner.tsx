@@ -2,8 +2,8 @@ import { useUpdatePrompt } from '../hooks/useUpdatePrompt';
 import { RefreshCw, X } from 'lucide-react';
 import { useState } from 'react';
 
-export const UpdateBanner = () => {
-  const { updateAvailable, applyUpdate, dismissUpdate } = useUpdatePrompt();
+export const UpdateBanner: React.FC = () => {
+  const { updateAvailable, applyUpdate } = useUpdatePrompt();
   const [dismissed, setDismissed] = useState(false);
 
   if (!updateAvailable || dismissed) {

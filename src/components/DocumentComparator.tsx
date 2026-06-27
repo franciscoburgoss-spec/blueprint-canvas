@@ -1,7 +1,12 @@
+import React from 'react';
 import { useProjectStore } from '../store/projectStore';
 import { X, FileText } from 'lucide-react';
 
-export const DocumentComparator = ({ onClose }) => {
+interface DocumentComparatorProps {
+  onClose: () => void;
+}
+
+export const DocumentComparator: React.FC<DocumentComparatorProps> = ({ onClose }) => {
   const { projects, activeProjectId } = useProjectStore();
   
   const activeProject = projects.find(p => p.id === activeProjectId);

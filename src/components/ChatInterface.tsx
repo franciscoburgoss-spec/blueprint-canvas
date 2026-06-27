@@ -2,13 +2,21 @@ import { useProjectStore } from '../store/projectStore';
 import { CommandInput } from './CommandInput';
 import { MessageSquare, User } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import type { Annotation, CommandHistoryEntry } from '../types';
 
-export const ChatInterface = ({ onShowComparator, onShowDocs }) => {
+type Message = 
+  | (CommandHistoryEntry & { messageType: 'command' })
+  | (Annotation & { messageType: 'annotation' });
+
+export const ChatInterface: React.FC<{
+  onShowComparator?: () => void;
+  onShowDocs?: () => void;
+}> = ({ onShowComparator, onShowDocs }) => {
   const { annotations, commandHistory, activeProjectId, activeDocumentId, projects } = useProjectStore();
   const [editingCommand, setEditingCommand] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [isNoteDragOver, setIsNoteDragOver] = useState(false);
-  const chatEndRef = useRef(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
   
   const activeProject = projects.find(p => p.id === activeProjectId);
   const activeDoc = activeProject?.documents.find(d => d.id === activeDocumentId);
@@ -17,7 +25,7 @@ export const ChatInterface = ({ onShowComparator, onShowDocs }) => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [commandHistory, annotations]);
 
-  const handleCommandClick = (command) => {
+  const handleCommandClick = (command: string) => {
     setEditingCommand(command);
   };
 
@@ -25,7 +33,7 @@ export const ChatInterface = ({ onShowComparator, onShowDocs }) => {
     setEditingCommand('');
   };
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(true);
   };
@@ -34,8 +42,12 @@ export const ChatInterface = ({ onShowComparator, onShowDocs }) => {
     setIsDragOver(false);
   };
 
-  
-  const handleNoteDragOver = (e) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleNoteDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     const data = e.dataTransfer.types.includes('application/note');
@@ -44,12 +56,12 @@ export const ChatInterface = ({ onShowComparator, onShowDocs }) => {
     }
   };
 
-  const handleNoteDragLeave = (e) => {
+  const handleNoteDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsNoteDragOver(false);
   };
 
-  const handleNoteDrop = (e) => {
+  const handleNoteDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsNoteDragOver(false);
@@ -85,14 +97,9 @@ export const ChatInterface = ({ onShowComparator, onShowDocs }) => {
     }
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  };
-
-  const allMessages = [
-    ...commandHistory.map(cmd => ({ ...cmd, messageType: 'command' })),
-    ...annotations.map(ann => ({ ...ann, messageType: 'annotation' })),
+  const allMessages: Message[] = [
+    ...commandHistory.map(cmd => ({ ...cmd, messageType: 'command' as const })),
+    ...annotations.map(ann => ({ ...ann, messageType: 'annotation' as const })),
   ].sort((a, b) => a.timestamp - b.timestamp);
 
   return (

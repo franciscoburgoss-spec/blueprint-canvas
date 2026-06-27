@@ -1,4 +1,12 @@
-let observationCounter = 0;
+import {
+  type ParsedCommand,
+  type ObservationType,
+  OBSERVATION_TYPES,
+} from '../types';
+
+// ============================================
+// PATRONES DE COMANDOS
+// ============================================
 
 const COMMAND_PATTERNS = {
   CREATE_PROJECT: /^\/create\s+project\s+"([^"]+)"/i,
@@ -10,6 +18,7 @@ const COMMAND_PATTERNS = {
   PROJECT_NOTE: /^\/note\s+"([^"]+)"/i,
   DOCUMENT_NOTE: /^\/doc-note\s+"([^"]+)"/i,
   HELP: /^\/help$/i,
+  DOCS: /^\/docs$/i,
   LIST: /^\/list\s+(projects|docs|obs|notes)$/i,
   DELETE: /^\/delete\s+(project|doc|obs)\s+(.+)$/i,
   APPROVE: /^\/approve\s+(OBS-[\w-]+)$/i,
@@ -28,12 +37,21 @@ const COMMAND_PATTERNS = {
   IMPORT: /^\/import\s+(.+)$/is,
   TIMELINE: /^\/timeline$/i,
   COMPARE: /^\/compare$/i,
-  DOCS: /^\/docs$/i,
 };
 
-export const parseCommand = (input) => {
+// ============================================
+// CONTADOR GLOBAL PARA IDs ÚNICOS
+// ============================================
+
+let observationCounter = 0;
+
+// ============================================
+// FUNCIÓN PRINCIPAL DE PARSEO
+// ============================================
+
+export const parseCommand = (input: string): ParsedCommand => {
   const trimmed = input.trim();
-  
+
   for (const [command, pattern] of Object.entries(COMMAND_PATTERNS)) {
     const match = trimmed.match(pattern);
     if (match) {
@@ -45,9 +63,19 @@ export const parseCommand = (input) => {
         case 'CURRENT':
           return { type: 'CURRENT' };
         case 'LOAD_DOCUMENT':
-          return { type: 'LOAD_DOCUMENT', docName: match[1], discipline: match[2]?.trim() || 'General' };
+          return {
+            type: 'LOAD_DOCUMENT',
+            docName: match[1],
+            discipline: match[2]?.trim() || 'General',
+          };
         case 'ADD_OBSERVATION':
-          return { type: 'ADD_OBSERVATION', docName: match[1], obsType: match[2], text: match[3], source: match[4].trim() };
+          return {
+            type: 'ADD_OBSERVATION',
+            docName: match[1],
+            obsType: match[2] as ObservationType,
+            text: match[3],
+            source: match[4].trim(),
+          };
         case 'EDIT_OBSERVATION':
           return { type: 'EDIT_OBSERVATION', id: match[1], newText: match[2] };
         case 'PROJECT_NOTE':
@@ -56,6 +84,8 @@ export const parseCommand = (input) => {
           return { type: 'DOCUMENT_NOTE', text: match[1] };
         case 'HELP':
           return { type: 'HELP' };
+        case 'DOCS':
+          return { type: 'DOCS' };
         case 'LIST':
           return { type: 'LIST', itemType: match[1] };
         case 'DELETE':
@@ -65,7 +95,10 @@ export const parseCommand = (input) => {
         case 'REJECT':
           return { type: 'REJECT', obsId: match[1] };
         case 'EXPORT':
-          return { type: 'EXPORT', format: match[1] };
+          return {
+            type: 'EXPORT',
+            format: match[1] as 'markdown' | 'json' | 'pdf',
+          };
         case 'CLEAR':
           return { type: 'CLEAR' };
         case 'STATUS':
@@ -73,11 +106,19 @@ export const parseCommand = (input) => {
         case 'SEARCH':
           return { type: 'SEARCH', query: match[1] };
         case 'FILTER':
-          return { type: 'FILTER', filterType: match[1], filterValue: match[2] };
+          return {
+            type: 'FILTER',
+            filterType: match[1] as 'type' | 'status',
+            filterValue: match[2],
+          };
         case 'TAG':
           return { type: 'TAG', obsId: match[1], tag: match[2] };
         case 'PRIORITY':
-          return { type: 'PRIORITY', obsId: match[1], priority: match[2] };
+          return {
+            type: 'PRIORITY',
+            obsId: match[1],
+            priority: match[2] as 'alta' | 'media' | 'baja',
+          };
         case 'COMMENT':
           return { type: 'COMMENT', obsId: match[1], comment: match[2] };
         case 'TEMPLATE':
@@ -92,23 +133,32 @@ export const parseCommand = (input) => {
           return { type: 'TIMELINE' };
         case 'COMPARE':
           return { type: 'COMPARE' };
-        case 'DOCS':
-          return { type: 'DOCS' };
       }
     }
   }
 
-  return { type: 'INVALID_COMMAND', error: 'Comando no reconocido. Usa /help para ver los comandos disponibles' };
+  return {
+    type: 'INVALID_COMMAND',
+    error: 'Comando no reconocido. Usa /help para ver los comandos disponibles',
+  };
 };
 
-export const generateObservationId = () => {
+// ============================================
+// GENERADOR DE IDs
+// ============================================
+
+export const generateObservationId = (): string => {
   observationCounter++;
   const year = new Date().getFullYear();
   const counter = observationCounter.toString().padStart(3, '0');
   return `OBS-${year}-${counter}`;
 };
 
-export const getHelpText = () => {
+// ============================================
+// TEXTO DE AYUDA
+// ============================================
+
+export const getHelpText = (): string => {
   return `
 COMANDOS DISPONIBLES:
 
@@ -163,3 +213,6 @@ UTILIDADES:
   /clear                           Limpia el historial del chat
   `;
 };
+
+// Re-exportar constantes para uso externo
+export { OBSERVATION_TYPES };

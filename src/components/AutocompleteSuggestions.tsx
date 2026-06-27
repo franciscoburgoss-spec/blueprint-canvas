@@ -1,6 +1,7 @@
 import { Command, FileText, AlertCircle, StickyNote, Search, Filter, Trash2, Download, List, Hash, Tag } from 'lucide-react';
+import type { Suggestion, SuggestionCategory } from '../types';
 
-const CATEGORY_ICONS = {
+const CATEGORY_ICONS: Record<SuggestionCategory, React.ComponentType<{ size: number; className?: string }>> = {
   proyecto: FileText,
   documento: FileText,
   observación: AlertCircle,
@@ -16,7 +17,7 @@ const CATEGORY_ICONS = {
   estado: Tag,
 };
 
-const CATEGORY_COLORS = {
+const CATEGORY_COLORS: Record<SuggestionCategory, string> = {
   proyecto: 'text-blue-400',
   documento: 'text-cyan-400',
   observación: 'text-yellow-400',
@@ -32,7 +33,17 @@ const CATEGORY_COLORS = {
   estado: 'text-green-400',
 };
 
-export const AutocompleteSuggestions = ({ suggestions, selectedIndex, onSelect }) => {
+interface AutocompleteSuggestionsProps {
+  suggestions: Suggestion[];
+  selectedIndex: number;
+  onSelect: (suggestion: Suggestion) => void;
+}
+
+export const AutocompleteSuggestions: React.FC<AutocompleteSuggestionsProps> = ({ 
+  suggestions, 
+  selectedIndex, 
+  onSelect 
+}) => {
   if (!suggestions || suggestions.length === 0) return null;
 
   return (

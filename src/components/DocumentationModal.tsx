@@ -1,6 +1,11 @@
+import React from 'react';
 import { X, BookOpen, Folder, FileText, AlertCircle, StickyNote, Search, Download, Command } from 'lucide-react';
 
-export const DocumentationModal = ({ onClose }) => {
+interface DocumentationModalProps {
+  onClose: () => void;
+}
+
+export const DocumentationModal: React.FC<DocumentationModalProps> = ({ onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
       <div className="bg-blueprint-panel border border-blueprint-grid/30 rounded-lg max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
@@ -426,7 +431,14 @@ export const DocumentationModal = ({ onClose }) => {
 };
 
 // Componente auxiliar para documentar cada comando
-const CommandDoc = ({ command, description, examples, notes }) => {
+interface CommandDocProps {
+  command: string;
+  description: string;
+  examples?: string[];
+  notes?: string;
+}
+
+const CommandDoc: React.FC<CommandDocProps> = ({ command, description, examples, notes }) => {
   return (
     <div className="border border-blueprint-grid/20 rounded-lg p-4 bg-blueprint-panel/30">
       <div className="flex items-start justify-between mb-2">

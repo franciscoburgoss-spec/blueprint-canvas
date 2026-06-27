@@ -29,7 +29,7 @@ describe('PWA Configuration', () => {
   });
 
   it('debe tener configuración PWA en vite.config.js', () => {
-    const config = fs.readFileSync('vite.config.js', 'utf8');
+    const config = fs.readFileSync('vite.config.ts', 'utf8');
     expect(config).toContain('VitePWA');
     expect(config).toContain('manifest');
     expect(config).toContain('Blueprint Canvas');
@@ -44,7 +44,7 @@ describe('PWA Configuration', () => {
   });
 
   it('debe tener el hook useInstallPrompt', () => {
-    const hookPath = path.join(process.cwd(), 'src/hooks/useInstallPrompt.js');
+    const hookPath = path.join(process.cwd(), 'src/hooks/useInstallPrompt.ts');
     expect(fs.existsSync(hookPath)).toBe(true);
     
     const content = fs.readFileSync(hookPath, 'utf8');
@@ -53,7 +53,7 @@ describe('PWA Configuration', () => {
   });
 
   it('debe tener el componente InstallBanner', () => {
-    const componentPath = path.join(process.cwd(), 'src/components/InstallBanner.jsx');
+    const componentPath = path.join(process.cwd(), 'src/components/InstallBanner.tsx');
     expect(fs.existsSync(componentPath)).toBe(true);
     
     const content = fs.readFileSync(componentPath, 'utf8');
@@ -61,8 +61,8 @@ describe('PWA Configuration', () => {
     expect(content).toContain('Instalar');
   });
 
-  it('debe incluir InstallBanner en App.jsx', () => {
-    const appPath = path.join(process.cwd(), 'src/App.jsx');
+  it('debe incluir InstallBanner en App.tsx', () => {
+    const appPath = path.join(process.cwd(), 'src/App.tsx');
     const content = fs.readFileSync(appPath, 'utf8');
     expect(content).toContain('InstallBanner');
   });

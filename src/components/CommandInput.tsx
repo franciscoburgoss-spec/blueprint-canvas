@@ -1,3 +1,4 @@
+import type { ParsedCommand, Suggestion } from '../types';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { parseCommand, getHelpText } from '../utils/parser';
 import { getSuggestions } from '../utils/autocomplete';
@@ -7,13 +8,20 @@ import { useProjectStore } from '../store/projectStore';
 import { useKeyboardShortcuts, SHORTCUTS } from '../hooks/useKeyboardShortcuts';
 import { Terminal, Keyboard } from 'lucide-react';
 
-export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator, onShowDocs }) => {
-  const [input, setInput] = useState('');
-  const [history, setHistory] = useState([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const [suggestionIndex, setSuggestionIndex] = useState(-1);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const inputRef = useRef(null);
+interface CommandInputProps {
+  editingCommand: string;
+  onClearEditing: () => void;
+  onShowComparator?: () => void;
+  onShowDocs?: () => void;
+}
+
+export const CommandInput: React.FC<CommandInputProps> = ({ editingCommand, onClearEditing, onShowComparator, onShowDocs }) => {
+  const [input, setInput] = useState<string>('');
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
+  const [suggestionIndex, setSuggestionIndex] = useState<number>(-1);
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   const store = useProjectStore();
 
@@ -33,7 +41,7 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
   }, [suggestions]);
 
   const shortcutCallbacks = {
-    executeCommand: (commandText) => {
+    executeCommand: (commandText: string) => {
       setInput(commandText);
       setTimeout(() => {
         const form = inputRef.current?.form;
@@ -44,7 +52,7 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
       }, 0);
     },
     focusInput: () => inputRef.current?.focus(),
-    setInput: (text) => setInput(text),
+    setInput: (text: string) => setInput(text),
     clearInput: () => { setInput(''); inputRef.current?.blur(); },
   };
 
@@ -57,14 +65,14 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
     }
   }, [editingCommand, onClearEditing]);
 
-  const applySuggestion = (suggestion) => {
+  const applySuggestion = (suggestion: Suggestion) => {
     setInput(suggestion.insertText);
     setShowSuggestions(false);
     setSuggestionIndex(-1);
     inputRef.current?.focus();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
@@ -76,35 +84,35 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
 
     setShowSuggestions(false);
     store.addCommandToHistory(input);
-    const result = parseCommand(input);
+    const result: ParsedCommand = parseCommand(input);
     
     switch (result.type) {
-            case 'USE_PROJECT': store.useProject(result.name); break;
+            case 'USE_PROJECT': if (result.name) store.useProject(result.name); break;
       case 'CURRENT': handleCurrent(); break;
-      case 'CREATE_PROJECT': store.createProject(result.name); break;
-      case 'LOAD_DOCUMENT': store.loadDocument(result.docName, result.discipline); break;
-      case 'ADD_OBSERVATION': store.addObservation(result.docName, result.obsType, result.text, result.source); break;
-      case 'EDIT_OBSERVATION': store.editObservation(result.id, result.newText); break;
-      case 'PROJECT_NOTE': store.addProjectNote(result.text); break;
-      case 'DOCUMENT_NOTE': store.addDocumentNote(result.text); break;
+      case 'CREATE_PROJECT': if (result.name) store.createProject(result.name); break;
+      case 'LOAD_DOCUMENT': if (result.docName) store.loadDocument(result.docName, result.discipline); break;
+      case 'ADD_OBSERVATION': if (result.docName && result.obsType && result.text) store.addObservation(result.docName, result.obsType, result.text, result.source || ''); break;
+      case 'EDIT_OBSERVATION': if (result.id && result.newText) store.editObservation(result.id, result.newText); break;
+      case 'PROJECT_NOTE': if (result.text) store.addProjectNote(result.text); break;
+      case 'DOCUMENT_NOTE': if (result.text) store.addDocumentNote(result.text); break;
       case 'HELP':
         useProjectStore.setState((state) => ({
           annotations: [...state.annotations, { id: Date.now(), type: 'info', message: getHelpText(), timestamp: Date.now() }]
         }));
         break;
-      case 'LIST': handleList(result.itemType); break;
-      case 'DELETE': handleDelete(result.itemType, result.itemName); break;
-      case 'APPROVE': store.approveObservation(result.obsId); break;
-      case 'REJECT': store.rejectObservation(result.obsId); break;
-      case 'EXPORT': handleExport(result.format); break;
+      case 'LIST': if (result.itemType) handleList(result.itemType); break;
+      case 'DELETE': if (result.itemType && result.itemName) handleDelete(result.itemType, result.itemName); break;
+      case 'APPROVE': if (result.obsId) store.approveObservation(result.obsId); break;
+      case 'REJECT': if (result.obsId) store.rejectObservation(result.obsId); break;
+      case 'EXPORT': if (result.format) handleExport(result.format); break;
       case 'CLEAR': store.clearHistory(); break;
       case 'STATUS': handleStatus(); break;
-      case 'SEARCH': store.searchObservations(result.query); break;
-      case 'FILTER': store.filterObservations(result.filterType, result.filterValue); break;
-      case 'TAG': store.tagObservation(result.obsId, result.tag); break;
-      case 'PRIORITY': store.setPriority(result.obsId, result.priority); break;
-      case 'COMMENT': store.addComment(result.obsId, result.comment); break;
-      case 'IMPORT': handleImport(result.jsonData); break;
+      case 'SEARCH': if (result.query) store.searchObservations(result.query); break;
+      case 'FILTER': if (result.filterType && result.filterValue) store.filterObservations(result.filterType, result.filterValue); break;
+      case 'TAG': if (result.obsId && result.tag) store.tagObservation(result.obsId, result.tag); break;
+      case 'PRIORITY': if (result.obsId && result.priority) store.setPriority(result.obsId, result.priority); break;
+      case 'COMMENT': if (result.obsId && result.comment) store.addComment(result.obsId, result.comment); break;
+      case 'IMPORT': if (result.jsonData) handleImport(result.jsonData); break;
       case 'REVIEW': handleReview(); break;
       case 'TIMELINE': handleTimeline(); break;
       case 'COMPARE': if (onShowComparator) onShowComparator(); break;
@@ -125,12 +133,13 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
     setInput('');
   };
 
-  const handleList = (itemType) => {
+  const handleList = (itemType: string) => {
     const project = store.projects.find(p => p.id === store.activeProjectId);
     if (!project && itemType !== 'projects') {
       useProjectStore.setState((state) => ({ annotations: [...state.annotations, { id: Date.now(), type: 'error', message: `[ERROR] No hay proyecto activo`, timestamp: Date.now() }] }));
       return;
     }
+    if (!project) return;
 
     let message = '';
     if (itemType === 'projects') {
@@ -138,7 +147,7 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
     } else if (itemType === 'docs') {
       message = `DOCUMENTOS:\n${project.documents.map(d => `  - ${d.name} [${d.discipline}] (${d.observations.length} obs)`).join('\n')}`;
     } else if (itemType === 'obs') {
-      const allObs = [];
+      const allObs: string[] = [];
       project.documents.forEach(doc => doc.observations.forEach(obs => allObs.push(`  - ${obs.id} [${obs.type}] ${obs.text.substring(0, 50)}... (${obs.status})`)));
       message = `OBSERVACIONES:\n${allObs.join('\n') || '  Sin observaciones'}`;
     } else if (itemType === 'notes') {
@@ -149,13 +158,13 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
     useProjectStore.setState((state) => ({ annotations: [...state.annotations, { id: Date.now(), type: 'info', message, timestamp: Date.now() }] }));
   };
 
-  const handleDelete = (itemType, itemName) => {
+  const handleDelete = (itemType: string, itemName: string) => {
     if (itemType === 'project') store.deleteProject(itemName.replace(/"/g, ''));
     else if (itemType === 'doc') store.deleteDocument(itemName);
     else if (itemType === 'obs') store.deleteObservation(itemName);
   };
 
-  const handleExport = (format) => {
+  const handleExport = (format: string) => {
     const project = store.projects.find(p => p.id === store.activeProjectId);
     if (!project) {
       useProjectStore.setState((state) => ({ 
@@ -181,12 +190,12 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
             timestamp: Date.now() 
           }] 
         }));
-      } catch (error) {
+      } catch (error: unknown) {
         useProjectStore.setState((state) => ({ 
           annotations: [...state.annotations, { 
             id: Date.now(), 
             type: 'error', 
-            message: `[ERROR] No se pudo exportar Markdown: ${error.message}`, 
+            message: `[ERROR] No se pudo exportar Markdown: ${error instanceof Error ? error.message : "Error desconocido"}`, 
             timestamp: Date.now() 
           }] 
         }));
@@ -203,12 +212,12 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
             timestamp: Date.now() 
           }] 
         }));
-      } catch (error) {
+      } catch (error: unknown) {
         useProjectStore.setState((state) => ({ 
           annotations: [...state.annotations, { 
             id: Date.now(), 
             type: 'error', 
-            message: `[ERROR] No se pudo exportar JSON: ${error.message}`, 
+            message: `[ERROR] No se pudo exportar JSON: ${error instanceof Error ? error.message : "Error desconocido"}`, 
             timestamp: Date.now() 
           }] 
         }));
@@ -230,17 +239,17 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
             annotations: [...state.annotations, { 
               id: Date.now(), 
               type: 'error', 
-              message: `[ERROR] No se pudo generar PDF: ${error.message}`, 
+              message: `[ERROR] No se pudo generar PDF: ${error instanceof Error ? error.message : "Error desconocido"}`, 
               timestamp: Date.now() 
             }] 
           }));
         });
-      } catch (error) {
+      } catch (error: unknown) {
         useProjectStore.setState((state) => ({ 
           annotations: [...state.annotations, { 
             id: Date.now(), 
             type: 'error', 
-            message: `[ERROR] No se pudo generar PDF: ${error.message}`, 
+            message: `[ERROR] No se pudo generar PDF: ${error instanceof Error ? error.message : "Error desconocido"}`, 
             timestamp: Date.now() 
           }] 
         }));
@@ -248,21 +257,21 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
     }
   };
 
-  const handleImport = (jsonData) => {
+  const handleImport = (jsonData: string) => {
     try {
       const data = JSON.parse(jsonData);
       if (data.name && data.documents) {
         useProjectStore.setState((state) => ({ projects: [...state.projects, data], activeProjectId: data.id }));
       }
-    } catch (error) {
-      useProjectStore.setState((state) => ({ annotations: [...state.annotations, { id: Date.now(), type: 'error', message: `[ERROR] Import fallido: ${error.message}`, timestamp: Date.now() }] }));
+    } catch (error: unknown) {
+      useProjectStore.setState((state) => ({ annotations: [...state.annotations, { id: Date.now(), type: 'error', message: `[ERROR] Import fallido: ${error instanceof Error ? error.message : "Error desconocido"}`, timestamp: Date.now() }] }));
     }
   };
 
   const handleReview = () => {
     const project = store.projects.find(p => p.id === store.activeProjectId);
     if (!project) return;
-    const pendingObs = [];
+    const pendingObs: any[] = [];
     project.documents.forEach(doc => doc.observations.forEach(obs => { if (obs.status === 'pendiente') pendingObs.push(obs); }));
     const message = `MODO REVISIÓN: ${pendingObs.length} pendientes\n${pendingObs.map(o => `  - ${o.id}: ${o.text}`).join('\n')}`;
     useProjectStore.setState((state) => ({ annotations: [...state.annotations, { id: Date.now(), type: 'info', message, timestamp: Date.now() }] }));
@@ -314,7 +323,7 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
     useProjectStore.setState((state) => ({ annotations: [...state.annotations, { id: Date.now(), type: 'info', message, timestamp: Date.now() }] }));
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     // Navegación de sugerencias
     if (showSuggestions && suggestions.length > 0) {
       if (e.key === 'ArrowDown') {
@@ -366,7 +375,7 @@ export const CommandInput = ({ editingCommand, onClearEditing, onShowComparator,
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInput(newValue);
     

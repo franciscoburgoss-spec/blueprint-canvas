@@ -2,11 +2,20 @@ import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useProjectStore } from '../store/projectStore';
 
-export const DropZone = () => {
+interface DropZoneProps {}
+
+interface DragData {
+  type: 'project' | 'document';
+  name: string;
+  id: string;
+  projectName?: string;
+}
+
+export const DropZone: React.FC<DropZoneProps> = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const { deleteProject, deleteDocument } = useProjectStore();
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     setIsDragOver(true);
@@ -16,12 +25,12 @@ export const DropZone = () => {
     setIsDragOver(false);
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(false);
 
     try {
-      const data = JSON.parse(e.dataTransfer.getData('application/json'));
+      const data: DragData = JSON.parse(e.dataTransfer.getData('application/json'));
       
       if (data.type === 'project') {
         if (confirm(`¿Eliminar proyecto "${data.name}"? Esta acción es irreversible.`)) {

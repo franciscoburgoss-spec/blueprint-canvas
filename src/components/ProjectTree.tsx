@@ -2,39 +2,56 @@ import { useProjectStore } from '../store/projectStore';
 import { Folder, FileText, ChevronRight, ChevronDown, Check, Trash2, GripVertical } from 'lucide-react';
 import { useState } from 'react';
 import { DropZone } from './DropZone';
+import type { Project } from '../types';
 
-export const ProjectTree = () => {
-  const { projects, activeProjectId, activeDocumentId, loadDocument, useProject, deleteProject, deleteDocument } = useProjectStore();
-  const [expanded, setExpanded] = useState({});
-  const [draggedItem, setDraggedItem] = useState(null);
+interface DragData {
+  type: 'project' | 'document';
+  name: string;
+  id: string;
+  projectName?: string;
+}
 
-  const toggleProject = (projectId) => {
+export const ProjectTree: React.FC = () => {
+  const { 
+    projects, 
+    activeProjectId, 
+    activeDocumentId, 
+    loadDocument, 
+    useProject, 
+    deleteProject, 
+    deleteDocument 
+  } = useProjectStore();
+  
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [, setDraggedItem] = useState<DragData | null>(null);
+
+  const toggleProject = (projectId: string) => {
     setExpanded(prev => ({ ...prev, [projectId]: !prev[projectId] }));
   };
 
-  const handleProjectClick = (project, e) => {
-    if (e.target.closest('button[title*="Eliminar"]')) return;
+  const handleProjectClick = (project: Project, e: React.MouseEvent) => {
+    if (e.target instanceof Element && e.target.closest('button[title*="Eliminar"]')) return;
     if (project.id !== activeProjectId) {
       useProject(project.name);
     }
     toggleProject(project.id);
   };
 
-  const handleDeleteProject = (e, projectName) => {
+  const handleDeleteProject = (e: React.MouseEvent, projectName: string) => {
     e.stopPropagation();
     if (confirm(`¿Eliminar proyecto "${projectName}"? Esta acción es irreversible.`)) {
       deleteProject(projectName);
     }
   };
 
-  const handleDeleteDocument = (e, docName) => {
+  const handleDeleteDocument = (e: React.MouseEvent, docName: string) => {
     e.stopPropagation();
     if (confirm(`¿Eliminar documento "${docName}"? Esta acción es irreversible.`)) {
       deleteDocument(docName);
     }
   };
 
-  const handleDragStart = (e, item) => {
+  const handleDragStart = (e: React.DragEvent, item: DragData) => {
     setDraggedItem(item);
     e.dataTransfer.setData('application/json', JSON.stringify(item));
     e.dataTransfer.effectAllowed = 'move';
@@ -88,7 +105,7 @@ export const ProjectTree = () => {
                       {project.name}
                     </span>
                     {isActive && (
-                      <Check size={12} className="text-blueprint-grid flex-shrink-0" title="Activo" />
+                      <span title="Activo"><Check size={12} className="text-blueprint-grid flex-shrink-0" /></span>
                     )}
                     <button
                       onClick={(e) => handleDeleteProject(e, project.name)}

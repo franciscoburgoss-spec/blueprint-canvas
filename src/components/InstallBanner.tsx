@@ -2,11 +2,10 @@ import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { Download, X } from 'lucide-react';
 import { useState } from 'react';
 
-export const InstallBanner = () => {
+export const InstallBanner: React.FC = () => {
   const { installPrompt, isInstalled, install } = useInstallPrompt();
   const [dismissed, setDismissed] = useState(false);
 
-  // No mostrar si ya está instalada, no hay prompt, o fue descartada
   if (isInstalled || !installPrompt || dismissed) {
     return null;
   }
